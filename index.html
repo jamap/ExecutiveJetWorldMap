@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejador de Rotas - Aviação Executiva</title>
+    
+    <!-- OpenLayers CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/css/ol.css" type="text/css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Planejador de Rotas - Aviação Executiva</h1>
+        </header>
+        
+        <div class="main-content">
+            <div class="controls-panel">
+                <div class="aircraft-selection">
+                    <h3>Seleção da Aeronave</h3>
+                    
+                    <div class="form-group">
+                        <label for="manufacturer">Fabricante:</label>
+                        <select id="manufacturer" onchange="updateModels()">
+                            <option value="">Selecione o fabricante</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="model">Modelo:</label>
+                        <select id="model" onchange="updateRange()" disabled>
+                            <option value="">Selecione o modelo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="range">Alcance:</label>
+                        <input type="text" id="range" readonly placeholder="Selecione o modelo">
+                    </div>
+                </div>
+                
+                <div class="route-planning">
+                    <h3>Planejamento da Rota</h3>
+                    
+                    <!-- Filtros para Origem -->
+                    <div class="airport-filters">
+                        <h4>Origem:</h4>
+                        <div class="form-group">
+                            <label for="origin-region">Região:</label>
+                            <select id="origin-region" onchange="updateOriginCountries()" disabled>
+                                <option value="">Selecione a região</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="origin-country">País:</label>
+                            <select id="origin-country" onchange="updateOriginAirports()" disabled>
+                                <option value="">Selecione o país</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="origin">Aeroporto:</label>
+                            <select id="origin" onchange="setOrigin()" disabled>
+                                <option value="">Selecione o aeroporto</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros para Destino -->
+                    <div class="airport-filters">
+                        <h4>Próxima Cidade:</h4>
+                        <div class="form-group">
+                            <label for="destination-region">Região:</label>
+                            <select id="destination-region" onchange="updateDestinationCountries()" disabled>
+                                <option value="">Selecione a região</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="destination-country">País:</label>
+                            <select id="destination-country" onchange="updateDestinationAirports()" disabled>
+                                <option value="">Selecione o país</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="destination">Aeroporto:</label>
+                            <select id="destination" onchange="addWaypoint()" disabled>
+                                <option value="">Selecione o aeroporto</option>
+                            </select>
+                            <small style="color: #666; font-size: 0.8rem; margin-top: 0.3rem; display: block;">
+                                💡 Para adicionar mais paradas, selecione novamente após cada cidade
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="route-info">
+                        <h4>Rota Atual:</h4>
+                        <ul id="route-list">
+                            <li>Nenhuma rota definida</li>
+                        </ul>
+                    </div>
+                    
+                    <button id="clear-route" onclick="clearRoute()" disabled>Limpar Rota</button>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OpenLayers JavaScript -->
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.15.1/build/ol.js"></script>
+    
+    <!-- Data -->
+    <script src="data.js"></script>
+    
+    <!-- Main Script -->
+    <script src="script.js"></script>
+</body>
+</html>
