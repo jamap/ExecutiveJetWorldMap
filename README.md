@@ -25,6 +25,20 @@ Interactive web system for executive aviation route planning with range validati
 - [Contributing](#contributing)
 
 ---
+---
+
+## 🚧 **Current Development Status**
+
+The project is currently in an active debugging and refinement phase. The core functionality is in place, but several issues are being addressed to ensure stability and a smooth user experience.
+
+### **Recent Fixes:**
+- **Syntax Error:** Corrected a critical syntax error in `script.js` that was halting script execution.
+- **Scope Resolution:** Fixed a `ReferenceError` by moving the `drawAirportMarker` function to the global scope, making it accessible where needed.
+- **Dynamic Range Circles:** Implemented the redrawing of the aircraft's range circle for each new waypoint added to the route.
+
+### **Known Issues Under Investigation:**
+- **Route List UI:** The "Current Route" list on the user interface is not updating correctly when new destinations are added. This is the highest priority issue.
+- **Waypoint Markers:** Airport markers for intermediate stops are not being displayed on the map. This is linked to the UI update issue and is being debugged concurrently.
 
 ## 🎯 **Overview**
 

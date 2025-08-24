@@ -346,19 +346,6 @@ function updateOriginState() {
 // Definir origem
 function setOrigin() {
     const originSelect = document.getElementById('origin');
-
-// Draw airport marker
-function drawAirportMarker(airport) {
-    const markerFeature = new ol.Feature({
-        geometry: new ol.geom.Point(ol.proj.fromLonLat([airport.lng, airport.lat])),
-        type: 'airport-marker',
-        airport: airport
-    });
-
-    vectorSource.addFeature(markerFeature);
-    airportMarkers.push(markerFeature);
-}
-
     const destinationRegionSelect = document.getElementById('destination-region');
     const clearRouteButton = document.getElementById('clear-route');
     
@@ -429,7 +416,7 @@ function addWaypoint() {
                 drawRouteLine(lastPoint, airport);
 
                 // Draw airport marker
-                // drawAirportMarker(airport); // Temporarily disabled for debugging
+                drawAirportMarker(airport);
                 
                 // Atualizar lista de rota
                 updateRouteList();
