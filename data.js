@@ -46,6 +46,8 @@ const aircraftDatabase = {
             'bbj-787-8': { name: 'BBJ 787-8 Dreamliner', range: 18519 },
             'bbj-787-9': { name: 'BBJ 787-9 Dreamliner', range: 20372 },
             'bbj-777': { name: 'BBJ 777', range: 18519 },
+            'bbj-777x-8': { name: 'BBJ 777X-8', range: 21570 }, // Launch 2028
+            'bbj-777x-9': { name: 'BBJ 777X-9', range: 20370 }, // Launch 2028
             'bbj-747': { name: 'BBJ 747-8', range: 19446 }
         }
     },

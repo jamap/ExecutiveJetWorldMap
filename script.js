@@ -5,6 +5,7 @@ let currentRange = 0;
 let routePoints = [];
 let rangeCircles = [];
 let routeLines = [];
+let airportMarkers = []; // Array for airport markers
 let vectorSource; // Data source for circles and lines
 let vectorLayer;  // Layer for circles and lines
 
@@ -64,6 +65,20 @@ function initializeMap() {
                         width: 4
                     })
                 });
+            } else if (type === 'airport-marker') {
+                return new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 6,
+                        fill: new ol.style.Fill({
+                            color: '#ffffff'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#000000',
+                            width: 2
+                        })
+                    }),
+                    zIndex: 10 // Ensure marker is drawn on top
+                });
             }
         }
     });
@@ -75,8 +90,8 @@ function initializeMap() {
             // Base layer
             new ol.layer.Tile({
                 source: new ol.source.XYZ({
-                    url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
-                    attributions: '© OpenStreetMap © CartoDB'
+                    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 })
             }),
             // Vector layer for circles and lines
@@ -331,6 +346,19 @@ function updateOriginState() {
 // Definir origem
 function setOrigin() {
     const originSelect = document.getElementById('origin');
+
+// Draw airport marker
+function drawAirportMarker(airport) {
+    const markerFeature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([airport.lng, airport.lat])),
+        type: 'airport-marker',
+        airport: airport
+    });
+
+    vectorSource.addFeature(markerFeature);
+    airportMarkers.push(markerFeature);
+}
+
     const destinationRegionSelect = document.getElementById('destination-region');
     const clearRouteButton = document.getElementById('clear-route');
     
@@ -359,6 +387,9 @@ function setOrigin() {
             // Atualizar lista de rota
             updateRouteList();
             
+            // Draw airport marker
+            drawAirportMarker(airport);
+
             // Habilitar seleção de destino e botão limpar
             destinationRegionSelect.disabled = false;
             clearRouteButton.disabled = false;
@@ -368,6 +399,7 @@ function setOrigin() {
 
 // Adicionar waypoint com validação melhorada
 function addWaypoint() {
+    console.log('addWaypoint triggered. Current routePoints:', JSON.parse(JSON.stringify(routePoints)));
     const destinationSelect = document.getElementById('destination');
     const selectedCode = destinationSelect.value;
     
@@ -388,12 +420,16 @@ function addWaypoint() {
             if (distance <= safetyMargin) {
                 // Adicionar à rota
                 routePoints.push(airport);
+                console.log('New point added. Updated routePoints:', JSON.parse(JSON.stringify(routePoints)));
+                
+                // Desenhar círculo de alcance para o novo ponto
+                drawRangeCircle(airport);
                 
                 // Desenhar linha de rota
                 drawRouteLine(lastPoint, airport);
-                
-                // Desenhar círculo de alcance
-                drawRangeCircle(airport);
+
+                // Draw airport marker
+                // drawAirportMarker(airport); // Temporarily disabled for debugging
                 
                 // Atualizar lista de rota
                 updateRouteList();
@@ -422,6 +458,7 @@ function addWaypoint() {
         } else {
             destinationSelect.value = '';
         }
+
     }
 }
 
@@ -481,6 +518,13 @@ function setupPopupInteraction() {
                     <strong>Trecho:</strong> ${from.city} → ${to.city}<br>
                     <strong>Códigos:</strong> ${from.code} → ${to.code}<br>
                     <strong>Distância:</strong> ${parseInt(distance).toLocaleString()} km
+                `;
+            } else if (type === 'airport-marker') {
+                const airport = feature.get('airport');
+                content = `
+                    <strong>${airport.city} (${airport.code})</strong><br>
+                    ${airport.name}<br>
+                    <em>${airport.country}</em>
                 `;
             }
             
@@ -558,6 +602,8 @@ function drawRangeCircle(airport) {
                 const bearing = (i / numPoints) * 360;
                 const point = calculateDestinationPoint(airport.lat, airport.lng, currentRange, bearing);
                 
+    airportMarkers = [];
+
                 // Validar ponto calculado
                 if (isNaN(point.lat) || isNaN(point.lng)) {
                     console.error('Invalid point calculated:', point, 'for bearing:', bearing);
@@ -595,7 +641,7 @@ function drawRangeCircle(airport) {
         vectorSource.addFeature(circleFeature);
         rangeCircles.push(circleFeature);
         
-        console.log(`Range circle created for ${airport.city} (${airport.code}) - Category: ${category}, Points: ${coordinates.length}`);
+        console.log(`Range circle created for ${airport.city} (${airport.code}) - Category: ${category}`);
         
     } catch (error) {
         console.error('Erro ao criar círculo de alcance:', error);
@@ -767,6 +813,7 @@ function calculateDestinationPoint(lat1, lng1, distance, bearing) {
 
 // Atualizar lista de rota
 function updateRouteList() {
+    console.log('updateRouteList triggered. Rendering routePoints:', JSON.parse(JSON.stringify(routePoints)));
     const routeList = document.getElementById('route-list');
     routeList.innerHTML = '';
     
@@ -777,29 +824,25 @@ function updateRouteList() {
         return;
     }
     
+    let totalDistance = 0;
+    
     routePoints.forEach((airport, index) => {
         const li = document.createElement('li');
-        let distance = '';
+        let distanceText = '';
         
         if (index > 0) {
             const prevAirport = routePoints[index - 1];
-            const dist = calculateDistance(prevAirport.lat, prevAirport.lng, airport.lat, airport.lng);
-            distance = ` (${dist.toFixed(0)} km)`;
+            const segmentDistance = calculateDistance(prevAirport.lat, prevAirport.lng, airport.lat, airport.lng);
+            distanceText = ` (${segmentDistance.toFixed(0)} km)`;
+            totalDistance += segmentDistance;
         }
         
-        li.textContent = `${index + 1}. ${airport.city} (${airport.code})${distance}`;
+        li.textContent = `${index + 1}. ${airport.city} (${airport.code})${distanceText}`;
         routeList.appendChild(li);
     });
     
     // Adicionar total se houver mais de um ponto
     if (routePoints.length > 1) {
-        let totalDistance = 0;
-        for (let i = 1; i < routePoints.length; i++) {
-            const prev = routePoints[i - 1];
-            const curr = routePoints[i];
-            totalDistance += calculateDistance(prev.lat, prev.lng, curr.lat, curr.lng);
-        }
-        
         const totalLi = document.createElement('li');
         totalLi.innerHTML = `<strong>Total Distance: ${totalDistance.toFixed(0)} km</strong>`;
         totalLi.style.borderTop = '2px solid #2c3e50';
