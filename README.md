@@ -709,7 +709,7 @@ if (!aeroporto || !aeroporto.lat || !aeroporto.lng) {
 **MIT License**
 
 ```
-Copyright (c) 2024 Planejador de Rotas - Aviação Executiva
+Copyright (c) 2025 Simulador de Rotas - Aviação Executiva
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -735,7 +735,7 @@ SOFTWARE.
 ## 📞 **Suporte e Contato**
 
 - **GitHub Issues**: Para bugs e sugestões técnicas
-- **Email**: [desenvolvimento@aviacao-executiva.com](mailto:desenvolvimento@aviacao-executiva.com)
+- **Email**: [jose.armando.porto@gmail.com](mailto:jose.armando.porto@gmail.com)
 - **Documentação**: Este README.md contém informações detalhadas
 
 ### **FAQ**
@@ -756,7 +756,7 @@ R: Abra uma Issue no GitHub com código IATA, localização e justificativa para
 
 ## 📊 **Estatísticas do Projeto**
 
-- **Desenvolvimento**: 6 meses (conceito → produção)
+- **Desenvolvimento**: 2 horas (conceito → produção)
 - **Linhas de código**: 1,870+ linhas
 - **Base de dados**: 630+ registros (aeronaves + aeroportos)
 - **Cobertura**: 12 regiões, 195 países
@@ -765,11 +765,9 @@ R: Abra uma Issue no GitHub com código IATA, localização e justificativa para
 
 ---
 
-**🛩️ Desenvolvido para a comunidade de aviação executiva**
-
-*"Planejamento preciso para voos extraordinários"*
+**🛩️ Desenvolvido para a comunidade de entusiastas de aviação executiva**
 
 ---
 
-*Última atualização: Dezembro 2024*
+*Última atualização: Agosto 2025*
 *Versão: 1.0.0*
