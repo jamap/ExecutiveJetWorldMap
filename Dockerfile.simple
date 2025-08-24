@@ -1,0 +1,77 @@
+# Executive Aviation Route Planner - Simplified Docker
+# Alpine Linux + Apache HTTPd (Minimal Configuration)
+
+FROM alpine:3.18
+
+# Metadata
+LABEL maintainer="jose.armando.porto@gmail.com"
+LABEL description="Executive Aviation Route Planner - Simplified Docker Build"
+LABEL version="1.0.0"
+
+# Install Apache and wget for health checks
+RUN apk add --no-cache \
+    apache2 \
+    apache2-utils \
+    wget \
+    && rm -rf /var/cache/apk/*
+
+# Create necessary directories
+RUN mkdir -p /var/www/html \
+    && mkdir -p /var/log/apache2 \
+    && mkdir -p /run/apache2
+
+# Copy application files
+COPY index.html /var/www/html/
+COPY style.css /var/www/html/
+COPY script.js /var/www/html/
+COPY data.js /var/www/html/
+
+# Create minimal Apache configuration
+RUN echo '# Executive Aviation Route Planner - Simple Configuration' > /etc/apache2/httpd.conf && \
+    echo 'ServerRoot /var/www' >> /etc/apache2/httpd.conf && \
+    echo 'Listen 80' >> /etc/apache2/httpd.conf && \
+    echo 'ServerName aviation-planner' >> /etc/apache2/httpd.conf && \
+    echo '' >> /etc/apache2/httpd.conf && \
+    echo '# Essential Modules Only' >> /etc/apache2/httpd.conf && \
+    echo 'LoadModule mpm_prefork_module modules/mod_mpm_prefork.so' >> /etc/apache2/httpd.conf && \
+    echo 'LoadModule authz_core_module modules/mod_authz_core.so' >> /etc/apache2/httpd.conf && \
+    echo 'LoadModule dir_module modules/mod_dir.so' >> /etc/apache2/httpd.conf && \
+    echo 'LoadModule mime_module modules/mod_mime.so' >> /etc/apache2/httpd.conf && \
+    echo '' >> /etc/apache2/httpd.conf && \
+    echo '# Basic Settings' >> /etc/apache2/httpd.conf && \
+    echo 'DocumentRoot /var/www/html' >> /etc/apache2/httpd.conf && \
+    echo 'DirectoryIndex index.html' >> /etc/apache2/httpd.conf && \
+    echo 'ServerTokens Prod' >> /etc/apache2/httpd.conf && \
+    echo 'ServerSignature Off' >> /etc/apache2/httpd.conf && \
+    echo '' >> /etc/apache2/httpd.conf && \
+    echo '# Directory Configuration' >> /etc/apache2/httpd.conf && \
+    echo '<Directory /var/www/html>' >> /etc/apache2/httpd.conf && \
+    echo '    AllowOverride None' >> /etc/apache2/httpd.conf && \
+    echo '    Require all granted' >> /etc/apache2/httpd.conf && \
+    echo '    Options -Indexes +FollowSymLinks' >> /etc/apache2/httpd.conf && \
+    echo '</Directory>' >> /etc/apache2/httpd.conf && \
+    echo '' >> /etc/apache2/httpd.conf && \
+    echo '# MIME Types' >> /etc/apache2/httpd.conf && \
+    echo 'TypesConfig /etc/apache2/mime.types' >> /etc/apache2/httpd.conf && \
+    echo '' >> /etc/apache2/httpd.conf && \
+    echo '# Logging' >> /etc/apache2/httpd.conf && \
+    echo 'ErrorLog /var/log/apache2/error.log' >> /etc/apache2/httpd.conf && \
+    echo 'LogLevel warn' >> /etc/apache2/httpd.conf && \
+    echo 'CustomLog /var/log/apache2/access.log combined' >> /etc/apache2/httpd.conf
+
+# Set proper permissions
+RUN chown -R apache:apache /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && chmod 644 /etc/apache2/httpd.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Simple startup
+CMD echo "🛩️ Starting Executive Aviation Route Planner (Simple)" && \
+    echo "🌐 Access at: http://localhost" && \
+    /usr/sbin/httpd -D FOREGROUND

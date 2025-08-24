@@ -1,0 +1,38 @@
+# Executive Aviation Route Planner - Minimal Docker
+# Alpine Linux + Apache HTTPd (Ultra Simple)
+
+FROM alpine:3.18
+
+# Metadata
+LABEL maintainer="jose.armando.porto@gmail.com"
+LABEL description="Executive Aviation Route Planner - Minimal Docker Build"
+LABEL version="1.0.0"
+
+# Install Apache and wget
+RUN apk add --no-cache apache2 apache2-utils wget
+
+# Create directories
+RUN mkdir -p /var/www/html /var/log/apache2 /run/apache2
+
+# Copy application files
+COPY index.html style.css script.js data.js /var/www/html/
+
+# Copy simple Apache configuration
+COPY apache-simple.conf /etc/apache2/httpd.conf
+
+# Set permissions
+RUN chown -R apache:apache /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    chmod 644 /etc/apache2/httpd.conf
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+
+# Expose port
+EXPOSE 80
+
+# Start Apache
+CMD echo "🛩️ Executive Aviation Route Planner (Minimal)" && \
+    echo "🌐 http://localhost:8080" && \
+    /usr/sbin/httpd -D FOREGROUND

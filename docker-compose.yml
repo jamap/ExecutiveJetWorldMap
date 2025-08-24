@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  aviation-planner:
+    build:
+      context: .
+      dockerfile: Dockerfile.python
+    container_name: executive-aviation-planner
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aviation-network
+    environment:
+      - TZ=UTC
+    labels:
+      - "com.docker.compose.project=executive-aviation-planner"
+      - "description=Executive Aviation Route Planner"
+      - "version=1.0.0"
+      - "maintainer=jose.armando.porto@gmail.com"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Add monitoring with lightweight container
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: aviation-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --interval 86400
+    restart: unless-stopped
+    networks:
+      - aviation-network
+    profiles:
+      - monitoring
+
+networks:
+  aviation-network:
+    driver: bridge
+    name: aviation-network
+
+volumes:
+  # Future: For persistent data if needed
+  aviation-data:
+    driver: local
+    name: aviation-data
