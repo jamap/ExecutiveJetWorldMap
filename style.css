@@ -182,7 +182,7 @@ button:disabled {
     height: 100%;
 }
 
-/* Estilos específicos do OpenLayers */
+/* OpenLayers specific styles */
 .ol-popup {
     position: relative;
     background-color: rgba(255, 255, 255, 0.95);
@@ -206,7 +206,7 @@ button:disabled {
     border-top-color: rgba(255, 255, 255, 0.95);
 }
 
-/* Customizar controles do OpenLayers */
+/* Customize OpenLayers controls */
 .ol-control {
     border-radius: 6px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -218,7 +218,7 @@ button:disabled {
     padding: 4px 8px;
 }
 
-/* Otimização de performance */
+/* Performance optimization */
 .ol-layer {
     image-rendering: optimizeSpeed;
 }

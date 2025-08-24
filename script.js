@@ -1,26 +1,26 @@
-// Variáveis globais
+// Global variables
 let map;
 let currentAircraft = null;
 let currentRange = 0;
 let routePoints = [];
 let rangeCircles = [];
 let routeLines = [];
-let vectorSource; // Fonte de dados para círculos e linhas
-let vectorLayer;  // Camada para círculos e linhas
+let vectorSource; // Data source for circles and lines
+let vectorLayer;  // Layer for circles and lines
 
-// Inicialização da aplicação
+// Application initialization
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     populateManufacturers();
     populateRegions();
 });
 
-// Inicializar o mapa
+// Initialize map
 function initializeMap() {
-    // Criar fonte de dados vetoriais para círculos e linhas
+    // Create vector data source for circles and lines
     vectorSource = new ol.source.Vector();
     
-    // Criar camada vetorial
+    // Create vector layer
     vectorLayer = new ol.layer.Vector({
         source: vectorSource,
         style: function(feature) {
@@ -68,44 +68,44 @@ function initializeMap() {
         }
     });
     
-    // Criar mapa OpenLayers
+    // Create OpenLayers map
     map = new ol.Map({
         target: 'map',
         layers: [
-            // Camada base
+            // Base layer
             new ol.layer.Tile({
                 source: new ol.source.XYZ({
                     url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                     attributions: '© OpenStreetMap © CartoDB'
                 })
             }),
-            // Camada vetorial para círculos e linhas
+            // Vector layer for circles and lines
             vectorLayer
         ],
         view: new ol.View({
-            center: ol.proj.fromLonLat([0, 20]), // Converter para Web Mercator
+            center: ol.proj.fromLonLat([0, 20]), // Convert to Web Mercator
             zoom: 2,
             minZoom: 2,
             maxZoom: 10,
-            // Impedir navegação além dos limites mundiais
+            // Prevent navigation beyond world limits
             extent: ol.proj.transformExtent([-180, -85, 180, 85], 'EPSG:4326', 'EPSG:3857')
         })
     });
     
-    // Adicionar controle de escala
+    // Add scale control
     map.addControl(new ol.control.ScaleLine({
         units: 'metric'
     }));
     
-    // Aguardar que o mapa seja completamente renderizado antes de configurar interações
+    // Wait for map to be fully rendered before configuring interactions
     map.once('rendercomplete', function() {
-        // Adicionar popup para interação com círculos e linhas
+        // Add popup for interaction with circles and lines
         setupPopupInteraction();
-        console.log('Mapa OpenLayers carregado e interações configuradas');
+        console.log('OpenLayers map loaded and interactions configured');
     });
 }
 
-// Popular dropdown de fabricantes
+// Populate manufacturers dropdown
 function populateManufacturers() {
     const manufacturerSelect = document.getElementById('manufacturer');
     
@@ -117,22 +117,22 @@ function populateManufacturers() {
     }
 }
 
-// Popular dropdown de regiões
+// Populate regions dropdown
 function populateRegions() {
     const originRegionSelect = document.getElementById('origin-region');
     const destinationRegionSelect = document.getElementById('destination-region');
     
-    // Ordenar regiões alfabeticamente
+    // Sort regions alphabetically
     const sortedRegions = Object.keys(regionMapping).sort();
     
     sortedRegions.forEach(region => {
-        // Adicionar à origem
+        // Add to origin
         const originOption = document.createElement('option');
         originOption.value = region;
         originOption.textContent = region;
         originRegionSelect.appendChild(originOption);
         
-        // Adicionar ao destino
+        // Add to destination
         const destinationOption = document.createElement('option');
         destinationOption.value = region;
         destinationOption.textContent = region;
@@ -140,16 +140,16 @@ function populateRegions() {
     });
 }
 
-// Atualizar países baseado na região selecionada (Origem)
+// Update countries based on selected region (Origin)
 function updateOriginCountries() {
     const regionSelect = document.getElementById('origin-region');
     const countrySelect = document.getElementById('origin-country');
     const airportSelect = document.getElementById('origin');
     
-    // Limpar seleções dependentes
-    countrySelect.innerHTML = '<option value="">Selecione o país</option>';
+    // Clear dependent selections
+    countrySelect.innerHTML = '<option value="">Select country</option>';
     countrySelect.disabled = true;
-    airportSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
     const selectedRegion = regionSelect.value;
@@ -173,19 +173,19 @@ function updateOriginCountries() {
     }
 }
 
-// Atualizar aeroportos baseado no país selecionado (Origem)
+// Update airports based on selected country (Origin)
 function updateOriginAirports() {
     const countrySelect = document.getElementById('origin-country');
     const airportSelect = document.getElementById('origin');
     
-    // Limpar aeroportos
-    airportSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    // Clear airports
+    airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
     const selectedCountry = countrySelect.value;
     
     if (selectedCountry) {
-        // Filtrar aeroportos do país selecionado
+        // Filter airports from selected country
         const countryAirports = airportsDatabase
             .filter(airport => airport.country === selectedCountry)
             .sort((a, b) => a.city.localeCompare(b.city));
@@ -201,16 +201,16 @@ function updateOriginAirports() {
     }
 }
 
-// Atualizar países baseado na região selecionada (Destino)
+// Update countries based on selected region (Destination)
 function updateDestinationCountries() {
     const regionSelect = document.getElementById('destination-region');
     const countrySelect = document.getElementById('destination-country');
     const airportSelect = document.getElementById('destination');
     
-    // Limpar seleções dependentes
-    countrySelect.innerHTML = '<option value="">Selecione o país</option>';
+    // Clear dependent selections
+    countrySelect.innerHTML = '<option value="">Select country</option>';
     countrySelect.disabled = true;
-    airportSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
     const selectedRegion = regionSelect.value;
@@ -218,7 +218,7 @@ function updateDestinationCountries() {
     if (selectedRegion && regionMapping[selectedRegion]) {
         const countries = regionMapping[selectedRegion];
         
-        // Filtrar países que têm aeroportos na base de dados
+        // Filter countries that have airports in the database
         const availableCountries = countries.filter(country => 
             airportsDatabase.some(airport => airport.country === country)
         ).sort();
@@ -234,19 +234,19 @@ function updateDestinationCountries() {
     }
 }
 
-// Atualizar aeroportos baseado no país selecionado (Destino)
+// Update airports based on selected country (Destination)
 function updateDestinationAirports() {
     const countrySelect = document.getElementById('destination-country');
     const airportSelect = document.getElementById('destination');
     
-    // Limpar aeroportos
-    airportSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    // Clear airports
+    airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
     const selectedCountry = countrySelect.value;
     
     if (selectedCountry) {
-        // Filtrar aeroportos do país selecionado
+        // Filter airports from selected country
         const countryAirports = airportsDatabase
             .filter(airport => airport.country === selectedCountry)
             .sort((a, b) => a.city.localeCompare(b.city));
@@ -268,8 +268,8 @@ function updateModels() {
     const modelSelect = document.getElementById('model');
     const rangeInput = document.getElementById('range');
     
-    // Limpar modelos existentes
-    modelSelect.innerHTML = '<option value="">Selecione o modelo</option>';
+    // Clear existing models
+    modelSelect.innerHTML = '<option value="">Select model</option>';
     modelSelect.disabled = true;
     rangeInput.value = '';
     
@@ -379,7 +379,7 @@ function addWaypoint() {
             // Calcular distância com mais precisão
             const distance = calculateDistance(lastPoint.lat, lastPoint.lng, airport.lat, airport.lng);
             
-            console.log(`Verificando rota: ${lastPoint.city} (${lastPoint.code}) → ${airport.city} (${airport.code})`);
+            console.log(`Checking route: ${lastPoint.city} (${lastPoint.code}) → ${airport.city} (${airport.code})`);
             console.log(`Distância: ${distance.toFixed(2)} km, Alcance: ${currentRange.toLocaleString()} km`);
             
             // Adicionar margem de segurança de 2% para compensar imprecisões cartográficas
@@ -560,7 +560,7 @@ function drawRangeCircle(airport) {
                 
                 // Validar ponto calculado
                 if (isNaN(point.lat) || isNaN(point.lng)) {
-                    console.error('Ponto inválido calculado:', point, 'para bearing:', bearing);
+                    console.error('Invalid point calculated:', point, 'for bearing:', bearing);
                     continue;
                 }
                 
@@ -595,7 +595,7 @@ function drawRangeCircle(airport) {
         vectorSource.addFeature(circleFeature);
         rangeCircles.push(circleFeature);
         
-        console.log(`Círculo de alcance criado para ${airport.city} (${airport.code}) - Categoria: ${category}, Pontos: ${coordinates.length}`);
+        console.log(`Range circle created for ${airport.city} (${airport.code}) - Category: ${category}, Points: ${coordinates.length}`);
         
     } catch (error) {
         console.error('Erro ao criar círculo de alcance:', error);
@@ -772,7 +772,7 @@ function updateRouteList() {
     
     if (routePoints.length === 0) {
         const li = document.createElement('li');
-        li.textContent = 'Nenhuma rota definida';
+        li.textContent = 'No route defined';
         routeList.appendChild(li);
         return;
     }
@@ -801,7 +801,7 @@ function updateRouteList() {
         }
         
         const totalLi = document.createElement('li');
-        totalLi.innerHTML = `<strong>Distância Total: ${totalDistance.toFixed(0)} km</strong>`;
+        totalLi.innerHTML = `<strong>Total Distance: ${totalDistance.toFixed(0)} km</strong>`;
         totalLi.style.borderTop = '2px solid #2c3e50';
         totalLi.style.paddingTop = '0.5rem';
         totalLi.style.marginTop = '0.5rem';
@@ -844,24 +844,24 @@ function clearRoute() {
     const originSelect = document.getElementById('origin');
     
     originRegionSelect.value = '';
-    originCountrySelect.innerHTML = '<option value="">Selecione o país</option>';
+    originCountrySelect.innerHTML = '<option value="">Select country</option>';
     originCountrySelect.disabled = true;
-    originSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    originSelect.innerHTML = '<option value="">Select airport</option>';
     originSelect.disabled = true;
     
-    // Resetar todos os filtros de destino
+    // Reset all destination filters
     const destinationRegionSelect = document.getElementById('destination-region');
     const destinationCountrySelect = document.getElementById('destination-country');
     const destinationSelect = document.getElementById('destination');
     
     destinationRegionSelect.value = '';
     destinationRegionSelect.disabled = true;
-    destinationCountrySelect.innerHTML = '<option value="">Selecione o país</option>';
+    destinationCountrySelect.innerHTML = '<option value="">Select country</option>';
     destinationCountrySelect.disabled = true;
-    destinationSelect.innerHTML = '<option value="">Selecione o aeroporto</option>';
+    destinationSelect.innerHTML = '<option value="">Select airport</option>';
     destinationSelect.disabled = true;
     
-    // Desabilitar botão limpar
+    // Disable clear button
     const clearRouteButton = document.getElementById('clear-route');
     clearRouteButton.disabled = true;
     
@@ -884,18 +884,18 @@ function testDistanceCalculations() {
     if (paris && hyderabad) {
         const distance = calculateDistance(paris.lat, paris.lng, hyderabad.lat, hyderabad.lng);
         console.log(`Paris → Hyderabad: ${distance.toFixed(2)} km`);
-        console.log(`Honda Echelon (6482 km): ${distance <= 6482 ? 'DENTRO' : 'FORA'} do alcance`);
-        console.log(`Diferença: ${(distance - 6482).toFixed(0)} km`);
+        console.log(`Honda Echelon (6482 km): ${distance <= 6482 ? 'WITHIN' : 'OUTSIDE'} range`);
+        console.log(`Difference: ${(distance - 6482).toFixed(0)} km`);
     }
     
     // Teste 2: Verificar se círculo geodésico funciona corretamente
     if (paris) {
         const testPoint = calculateDestinationPoint(paris.lat, paris.lng, 6482, 90); // 90 graus = leste
-        console.log(`Ponto a 6482km a LESTE de Paris: ${testPoint.lat.toFixed(4)}°N, ${testPoint.lng.toFixed(4)}°E`);
+        console.log(`Point 6482km EAST of Paris: ${testPoint.lat.toFixed(4)}°N, ${testPoint.lng.toFixed(4)}°E`);
         
         // Verificar se a distância de volta é igual
         const backDistance = calculateDistance(paris.lat, paris.lng, testPoint.lat, testPoint.lng);
-        console.log(`Distância de volta: ${backDistance.toFixed(2)} km (deve ser ~6482)`);
+        console.log(`Return distance: ${backDistance.toFixed(2)} km (should be ~6482)`);
     }
     
     // Teste 3: Nova York para Londres (controle)
