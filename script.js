@@ -10,6 +10,19 @@ let vectorSource; // Data source for circles and lines
 let vectorLayer;  // Layer for circles and lines
 
 // Application initialization
+
+// Draw airport marker
+function drawAirportMarker(airport) {
+    const markerFeature = new ol.Feature({
+        geometry: new ol.geom.Point(ol.proj.fromLonLat([airport.lng, airport.lat])),
+        type: 'airport-marker',
+        airport: airport
+    });
+
+    vectorSource.addFeature(markerFeature);
+    airportMarkers.push(markerFeature);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     populateManufacturers();
@@ -386,7 +399,6 @@ function setOrigin() {
 
 // Adicionar waypoint com validação melhorada
 function addWaypoint() {
-    console.log('addWaypoint triggered. Current routePoints:', JSON.parse(JSON.stringify(routePoints)));
     const destinationSelect = document.getElementById('destination');
     const selectedCode = destinationSelect.value;
     
@@ -407,7 +419,6 @@ function addWaypoint() {
             if (distance <= safetyMargin) {
                 // Adicionar à rota
                 routePoints.push(airport);
-                console.log('New point added. Updated routePoints:', JSON.parse(JSON.stringify(routePoints)));
                 
                 // Desenhar círculo de alcance para o novo ponto
                 drawRangeCircle(airport);
@@ -800,7 +811,6 @@ function calculateDestinationPoint(lat1, lng1, distance, bearing) {
 
 // Atualizar lista de rota
 function updateRouteList() {
-    console.log('updateRouteList triggered. Rendering routePoints:', JSON.parse(JSON.stringify(routePoints)));
     const routeList = document.getElementById('route-list');
     routeList.innerHTML = '';
     
