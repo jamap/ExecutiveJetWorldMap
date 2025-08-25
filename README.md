@@ -25,20 +25,7 @@ Interactive web system for executive aviation route planning with range validati
 - [Contributing](#contributing)
 
 ---
----
 
-## 🚧 **Current Development Status**
-
-The project is currently in an active debugging and refinement phase. The core functionality is in place, but several issues are being addressed to ensure stability and a smooth user experience.
-
-### **Recent Fixes:**
-- **Syntax Error:** Corrected a critical syntax error in `script.js` that was halting script execution.
-- **Scope Resolution:** Fixed a `ReferenceError` by moving the `drawAirportMarker` function to the global scope, making it accessible where needed.
-- **Dynamic Range Circles:** Implemented the redrawing of the aircraft's range circle for each new waypoint added to the route.
-
-### **Known Issues Under Investigation:**
-- **Route List UI:** The "Current Route" list on the user interface is not updating correctly when new destinations are added. This is the highest priority issue.
-- **Waypoint Markers:** Airport markers for intermediate stops are not being displayed on the map. This is linked to the UI update issue and is being debugged concurrently.
 
 ## 🎯 **Overview**
 
@@ -557,19 +544,6 @@ services:
       - TZ=UTC
 ```
 
-### **🛠️ Management Commands**
-
-```bash
-# Using utility scripts
-./docker-scripts.sh build-dev      # Build development image
-./docker-scripts.sh build-prod     # Build production image
-./docker-scripts.sh run-dev        # Run development container
-./docker-scripts.sh run-prod       # Run production container
-./docker-scripts.sh health         # Check application health
-./docker-scripts.sh stats          # View resource usage
-./docker-scripts.sh clean-all      # Clean containers and images
-```
-
 ### **🚀 Scaling & Production Deployment**
 
 #### **Single Instance**
@@ -989,18 +963,18 @@ A: Open a GitHub Issue with IATA code, location and justification for inclusion.
 
 ## 📊 **Project Statistics**
 
-- **Development**: 2 hours (concept → production)
+- **Development**: 8 hours (concept → first version → refinement → production)
 - **Lines of code**: 1,870+ lines
 - **Database**: 630+ records (aircraft + airports)
 - **Coverage**: 12 regions, 195 countries
 - **Geodesic precision**: ±0.1%
 - **Performance**: <2s to load, <500ms to validate route
-
+  
 ---
 
 ## 🤖 **Development with Memex**
 
-This project was developed in **2 hours** with support from **[Memex](https://memex.tech)**, an AI-based engineering assistant that revolutionized the development process.
+This project was developed in **8 hours** with support from **[Memex](https://memex.tech)**, an AI-based engineering assistant that, effectively, did all the coding activities related to the development process.
 
 ### **🚀 How Memex Accelerated Development:**
 
@@ -1010,6 +984,7 @@ This project was developed in **2 hours** with support from **[Memex](https://me
 - **Guided technology selection** (OpenLayers vs Leaflet vs Mapbox)
 - **Data architecture** optimized for hierarchical filters
 - **Feature planning** based on real use cases
+- **UX Adjustments** based on human iteration (longest time spent) 
 
 #### **2. Advanced Technical Implementation**
 
@@ -1147,64 +1122,27 @@ if (currentRange >= 20000) {
 
 | Aspect | Traditional | With Memex | Savings |
 |---------|-------------|-----------|----------|
-| **Technology Research** | 4-8 hours | 15 minutes | 95% |
-| **OpenLayers Implementation** | 1-2 days | 30 minutes | 90% |
-| **Geodesic Algorithms** | 4-6 hours | 20 minutes | 92% |
-| **Database** | 1-2 days | 45 minutes | 85% |
-| **Debug and Optimization** | 2-4 hours | 30 minutes | 88% |
-| **Documentation** | 2-3 hours | 15 minutes | 92% |
-| **Docker Setup** | 4-6 hours | 15 minutes | 94% |
-| **Total** | **6-8 days** | **2.25 hours** | **96%** |
+| **Technology Research** | 4-8 hours | 15 minutes | ~95% |
+| **OpenLayers Implementation** | 1-2 days | 30 minutes | ~90% |
+| **Geodesic Algorithms** | 4-6 hours | 20 minutes | ~92% |
+| **Database** | 1-2 days | 45 minutes | ~85% |
+| **Debug, Optimization and UX/UI fixes** | 2-4 days | ~6 hours | ~80% |
+| **Documentation** | 2-3 hours | 15 minutes | ~92% |
+| **Docker Setup** | 4-6 hours | 15 minutes | ~94% |
+| **Total** | **~3-5 business days** | **~8 hours** | **~66%** |
 
 ### **🧠 Iterative Development Process:**
 
+The development process, including ideation, implementation, and debugging, was completed in approximately 8 hours. This rapid cycle was made possible by Memex's ability to quickly generate code, identify complex issues, and assist in the debugging process.
+
 ```
-1. 🎯 Requirements Definition (5 min)
-   ├── Use cases identified
-   ├── Target audience defined  
-   └── Priority functionalities
-
-2. 🏗️ Architecture and Technology (10 min)
-   ├── OpenLayers selected vs alternatives
-   ├── MVC structure planned
-   └── Data flow defined
-
-3. 💾 Database Structuring (20 min)
-   ├── 80 aircraft categorized
-   ├── 550 airports regionally organized
-   └── Geodesic coordinate validation
-
-4. 🗺️ Map Implementation (25 min)
-   ├── OpenLayers initialization
-   ├── Native geodesic circles
-   └── Interactions and popups
-
-5. ✈️ Validation Logic (30 min)
-   ├── Haversine formula implemented
-   ├── 2% safety margin
-   └── Detailed error alerts
-
-6. 🔧 Debugging and Corrections (35 min)
-   ├── Inverted circles corrected
-   ├── Antimeridian handled
-   └── Duplicate IATA codes resolved
-
-7. 🎨 Interface and UX (10 min)
-   ├── Hierarchical filters implemented
-   ├── Dynamic route list
-   └── Responsiveness optimized
-
-8. 📚 Technical Documentation (5 min)
-   ├── Complete README.md generated
-   ├── Code comments
-   └── Usage guides
-
-9. 🐳 Docker Setup (15 min)
-   ├── Alpine Linux + Apache Dockerfiles
-   ├── Production hardened configuration
-   ├── Docker Compose orchestration
-   ├── Utility scripts for management
-   └── Complete Docker documentation
+1. 🎯 Requirements & Architecture (25 min)
+2. 💾 Database Structuring (20 min)
+3. 🗺️ Map & Validation Logic (55 min)
+4. 🔧 Initial Debugging & Corrections (35 min)
+5. 🎨 Interface and UX Refinements (10 min)
+6. 🐞 Advanced Debugging & Scope Resolution (5 hours)
+7. 📚 Documentation & Docker Setup (20 min)
 ```
 
 ### **🌟 Technical Innovations Achieved:**
@@ -1227,7 +1165,7 @@ if (currentRange >= 20000) {
 - ✅ **Complete documentation** generated automatically
 - ✅ **Iterative improvements** based on visual feedback
 
-**Result:** An application that would normally take **1-2 weeks** of development was created in **2 hours** maintaining professional quality and technical precision.
+**Result:** An application that would normally take **1-2 weeks** of development was created in approximately **8 hours**, maintaining professional quality and technical precision.
 
 ---
 
