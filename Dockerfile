@@ -2,7 +2,7 @@
 FROM httpd:2.4-alpine
 
 # Metadata
-LABEL maintainer="jose.armando.porto@gmail.com"
+LABEL maintainer="execavworldmap@devhq.biz"
 LABEL description="Executive Aviation Route Planner - Simplified Docker setup"
 LABEL version="2.0.0"
 

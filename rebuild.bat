@@ -15,5 +15,5 @@ echo Starting the new container...
 docker-compose up -d
 
 echo.
-echo Process complete. The application should be running at http://localhost:8080
+echo Process complete. The application should be running at http://localhost:80
 pause
