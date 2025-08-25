@@ -5,7 +5,7 @@ Interactive web system for executive aviation route planning with range validati
 ![Route Planner](https://img.shields.io/badge/Status-Operational-brightgreen)
 ![OpenLayers](https://img.shields.io/badge/OpenLayers-6.15-blue)
 ![Aircraft](https://img.shields.io/badge/Aircraft-80+-orange)
-![Airports](https://img.shields.io/badge/Airports-550+-yellow)
+![Airports](https://img.shields.io/badge/Airports-400+-yellow)
 
 ## 📋 **Table of Contents**
 
@@ -44,7 +44,7 @@ The **Executive Aviation Route Planner** is a web application developed for enth
 
 ### **🌍 Global Coverage**
 
-- **550+ airports** on all continents
+- **400+ airports** across all continents and regions
 - **Hierarchical filters**: Region → Country → Airport
 - **Strategic coverage**: Oceanic crossing points (Iceland, Azores, Guam)
 
@@ -117,39 +117,43 @@ The **Executive Aviation Route Planner** is a web application developed for enth
 | **Heavy Jets** | 12,000-16,000 km | 8 | 🔴 Red |
 | **Ultra Long** | > 16,000 km | 4 | 🔴 Red |
 
-### **🌍 Airports (550+ destinations)**
+### **🌍 Airports (400+ destinations)**
 
 #### **By Region:**
 
 | Region | Airports | Coverage | Strategic Examples |
 |--------|------------|-----------|----------------------|
-| **North America** | 85 | USA, Canada, Mexico | JFK, LAX, YYZ, MEX |
-| **South America** | 64 | Expanded Brazil, main capitals | VCP, GRU, EZE, BOG, SCL |
-| **Europe** | 95 | EU + UK, Russia, Turkey | CDG, LHR, FRA, SVO |
-| **Asia** | 120 | China, Japan, India, Southeast Asia | HND, PEK, BOM, SIN, HKG |
-| **Africa** | 45 | North, South, West | CAI, JNB, LOS, CMN |
-| **Oceania** | 25 | Australia, New Zealand, Pacific | SYD, MEL, AKL, NAN |
+| **North America** | 102 | USA (all 50 states + DC), Canada, Mexico | JFK, LAX, YYZ, MEX |
+| **South America** | 95 | Expanded Brazil, all South American countries | VCP, GRU, EZE, BOG, SCL |
+| **Europe** | 87 | EU capitals + expanded coverage | CDG, LHR, FRA, SVO |
+| **Asia** | 64 | China, Japan, India, Southeast Asia | HND, PEK, BOM, SIN, HKG |
+| **Africa** | 45 | North, South, West, East Africa | CAI, JNB, LOS, CMN |
+| **Oceania** | 11 | Australia, New Zealand | SYD, MEL, AKL |
 | **Middle East** | 35 | Strategic hub | DXB, DOH, AUH, TLV |
-| **Caribbean** | 25 | Executive destinations | NAS, BGI, SXM, PTP |
-| **Atlantic** | 18 | Crossing points | KEF, LPA, PDL, RAI |
-| **Pacific** | 15 | Strategic islands | HNL, GUM, NAN, PPT |
-| **Arctic** | 8 | Polar routes | ANC, FAI, SFJ, LYR |
-| **Indian Ocean** | 10 | Oceanic connections | MRU, SEZ, CMB, MLE |
+| **Caribbean** | 34 | Executive destinations | NAS, BGI, SXM, PTP |
+| **Central America** | 20 | All Central American countries | PTY, SJO, GUA |
+| **Pacific** | 26 | Strategic Pacific islands | HNL, GUM, NAN, PPT |
+| **North Atlantic** | 18 | Crossing points | KEF, LPA, PDL, RAI |
+| **Atlantic Islands** | 8 | Atlantic crossing points | RAI, BNU, ASI |
+| **Indian Ocean Islands** | 10 | Oceanic connections | MRU, SEZ, CMB, MLE |
 
 #### **Specific Expansions:**
 
-**Brazil (64 airports):**
+**Regional Data Organization:**
 
-- **Main**: GRU, VCP, SDU, BSB, CNF, REC, FOR
-- **Regional**: All states with executive airports
-- **Amazon**: MAO, BEL, PVH, CGB
-- **Northeast**: NAT, AJU, MCZ, ILH
+All airport data is organized into modular JSON files by geographic region:
 
-**Expanded Asia (64 new airports):**
+- **Regional JSON files**: `data/africa.json`, `data/asia.json`, `data/europe.json`, etc.
+- **Consistent formatting**: One-line JSON objects for optimal loading
+- **Standardized sorting**: Country (alphabetical), City (alphabetical), Airport Code (alphabetical)
+- **Comprehensive coverage**: All major countries and territories within each region
 
-- **India**: 15 airports (DEL, BOM, BLR, HYD, MAA)
-- **Southeast Asia**: 25 airports (Bangkok, Manila, Jakarta)
-- **Far East**: 24 airports (Seoul, Taipei, Ulaanbaatar)
+**Key Regional Features:**
+
+- **North America**: Complete coverage of all 50 US states plus DC, Canada provinces, Mexico
+- **Europe**: All European capitals plus expanded Eastern European coverage
+- **Pacific**: Complete coverage of all Pacific island nations and territories
+- **Indian Ocean**: Comprehensive island nations including remote territories
 
 ---
 
@@ -644,7 +648,22 @@ ExecutiveJetWorldMap/
 ├── index.html              # Main interface (HTML5)
 ├── style.css               # Responsive styles (CSS3)
 ├── script.js               # Core application logic (JavaScript ES6+)
-├── data.js                 # Aircraft and airport database
+├── data.js                 # Aircraft database and region mappings
+│
+├── data/                   # Regional airport databases
+│   ├── africa.json         # African airports (45 airports)
+│   ├── asia.json           # Asian airports (64 airports)
+│   ├── atlantic_islands.json # Atlantic island airports (8 airports)
+│   ├── caribbean.json      # Caribbean airports (34 airports)
+│   ├── central_america.json # Central American airports (20 airports)
+│   ├── europe.json         # European airports (87 airports)
+│   ├── indian_ocean_islands.json # Indian Ocean airports (10 airports)
+│   ├── middle_east.json    # Middle Eastern airports (35 airports)
+│   ├── north_america.json  # North American airports (102 airports)
+│   ├── north_atlantic.json # North Atlantic airports (18 airports)
+│   ├── oceania.json        # Oceania airports (11 airports)
+│   ├── pacific.json        # Pacific islands airports (26 airports)
+│   └── south_america.json  # South American airports (95 airports)
 │
 ├── Dockerfile              # Docker build for development environment
 ├── docker-compose.yml      # Docker Compose configuration for easy startup
@@ -660,7 +679,8 @@ ExecutiveJetWorldMap/
 | File | Lines | Purpose |
 |----------------------|-------|------------------------------------------------|
 | **script.js** | ~960 | Core logic: map handling, route validation, geodesic calculations |
-| **data.js** | ~600 | Database: 80+ aircraft, 550+ airports, regional data |
+| **data.js** | ~200 | Aircraft database: 80+ aircraft models, regional mappings |
+| **data/*.json** | ~200 | Regional airport databases: 400+ airports across 13 regions |
 | **style.css** | ~265 | Styling: responsive layout, popups, controls |
 | **index.html** | ~130 | HTML structure: layout, forms, map container |
 | **Dockerfile** | ~15 | Docker build instructions (Alpine + Python HTTP Server) |
@@ -668,11 +688,11 @@ ExecutiveJetWorldMap/
 
 ### **Code Statistics**
 
-- **Total Lines**: ~2,000 lines (Application + Config)
-- **Application Logic (JS)**: ~48%
-- **Database (JS)**: ~30%
-- **Styling & Structure (CSS/HTML)**: ~20%
-- **Configuration (Docker)**: ~2%
+- **Total Lines**: ~1,800 lines (Application + Data + Config)
+- **Application Logic (JS)**: ~53%
+- **Database (JS + JSON)**: ~22%
+- **Styling & Structure (CSS/HTML)**: ~22%
+- **Configuration (Docker)**: ~3%
 
 ---
 
@@ -717,14 +737,23 @@ ExecutiveJetWorldMap/
   - Problem: Polygons showing area OUTSIDE range
   - Solution: Native `ol.geom.Circle` for all cases
 
-### **Phase 6: Database Expansion**
+### **Phase 6: Database Reorganization and Expansion**
 
-- ✅ **Expanded Brazil**: 64 airports (+ Campinas VCP, regional)
-- ✅ **Expanded Asia**: +64 airports (India, Southeast Asia, Far East)
-- ✅ **Updated aircraft**: Boom Overture, future models through 2030
-- ✅ **Strategic points**: Iceland, Azores, Pacific, Arctic
+- ✅ **Modular regional structure**: Separated airport data into 13 regional JSON files
+- ✅ **Comprehensive coverage**: Complete coverage of all regions and major territories
+- ✅ **Standardized organization**: Country → City → Airport Code sorting across all files
+- ✅ **Format optimization**: One-line JSON objects for improved loading performance
+- ✅ **Strategic expansion**: Enhanced Pacific, Indian Ocean, and European coverage
 
-### **Phase 7: Final Refinements**
+### **Phase 7: Database Modularization and Organization**
+
+- ✅ **Regional file separation**: Split monolithic airport database into 13 regional JSON files
+- ✅ **Comprehensive regional coverage**: Ensured all countries and territories represented in each region
+- ✅ **Standardized organization**: Applied consistent sorting (Country → City → Code) across all files
+- ✅ **Format optimization**: Converted to one-line JSON objects for improved loading performance
+- ✅ **Data quality**: Preserved all existing airports while adding strategic coverage gaps
+
+### **Phase 8: Final Refinements**
 
 - ✅ **Intelligent categorization** by range
 - ✅ **Informative popups** with complete details
@@ -755,9 +784,9 @@ ExecutiveJetWorldMap/
 ### **Database**
 
 1. **Airports**
-   - Focus on main executive destinations
-   - Some remote regions have limited coverage
-   - **Status**: 550+ airports cover >95% of use cases
+   - Focus on main executive destinations and strategic locations
+   - Comprehensive coverage of all major regions and territories
+   - **Status**: 400+ airports provide excellent global coverage for executive aviation
 
 2. **Aircraft**
    - Jets only (turboprops excluded by choice)
@@ -950,10 +979,10 @@ A: Open a GitHub Issue with IATA code, location and justification for inclusion.
 
 ## 📊 **Project Statistics**
 
-- **Development**: 8 hours (concept → first version → refinement → production)
-- **Lines of code**: 1,870+ lines
-- **Database**: 630+ records (aircraft + airports)
-- **Coverage**: 12 regions, 195 countries
+- **Development**: 8+ hours (concept → implementation → reorganization → production)
+- **Lines of code**: 1,800+ lines
+- **Database**: 500+ records (80+ aircraft + 400+ airports)
+- **Coverage**: 13 regions, comprehensive country coverage
 - **Geodesic precision**: ±0.1%
 - **Performance**: <2s to load, <500ms to validate route
   
@@ -1020,7 +1049,7 @@ function calculateDestinationPoint(lat1, lng1, distance, bearing) {
 
 #### **4. Structured Database**
 
-Memex organized **630+ records** in optimized structures:
+Memex organized **500+ records** in optimized modular structures:
 
 ```javascript
 // Aircraft by manufacturer with automatic validation
@@ -1037,17 +1066,15 @@ const aircraftDatabase = {
     }
 };
 
-// Airports with hierarchical regional filters
-const airportsDatabase = [
-    {
-        code: 'VCP',
-        city: 'Campinas', 
-        country: 'Brazil',
-        lat: -23.0074, lng: -47.1345,
-        name: 'Viracopos International Airport'
-    }
-    // ... 550+ geographically validated airports
-];
+// Regional airport databases (modular JSON files)
+// data/south_america.json
+[
+    {"code": "VCP", "city": "Campinas", "country": "Brazil", "lat": -23.0074, "lng": -47.1345, "name": "Viracopos International Airport"}
+    // ... organized by country → city → code
+]
+
+// 13 regional files with 400+ geographically validated airports
+// Standardized formatting and consistent organization
 ```
 
 #### **5. Real-time Debugging and Optimization**
