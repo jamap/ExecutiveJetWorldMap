@@ -1,0 +1,7 @@
+[
+    { "code": "KEF", "city": "Reykjavik", "country": "Iceland", "lat": 64.1300, "lng": -21.9406, "name": "Keflavík International Airport" },
+    { "code": "SFJ", "city": "Kangerlussuaq", "country": "Greenland", "lat": 67.0122, "lng": -50.7116, "name": "Kangerlussuaq Airport" },
+    { "code": "BGO", "city": "Bergen", "country": "Norway", "lat": 60.2934, "lng": 5.2181, "name": "Bergen Airport" },
+    { "code": "TRD", "city": "Trondheim", "country": "Norway", "lat": 63.4578, "lng": 10.9239, "name": "Trondheim Airport" },
+    { "code": "FAE", "city": "Tórshavn", "country": "Faroe Islands", "lat": 62.0636, "lng": -7.2772, "name": "Vágar Airport" }
+]

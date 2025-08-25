@@ -9,6 +9,19 @@ let airportMarkers = []; // Array for airport markers
 let vectorSource; // Data source for circles and lines
 let vectorLayer;  // Layer for circles and lines
 
+let airportDataCache = {}; // Cache for loaded regional airport data
+
+// Helper function to find an airport by its code in the cache
+function findAirportByCode(code) {
+    for (const region in airportDataCache) {
+        const airport = airportDataCache[region].find(a => a.code === code);
+        if (airport) {
+            return airport;
+        }
+    }
+    return null; // Return null if not found in any loaded region
+}
+
 // Application initialization
 
 // Draw airport marker
@@ -27,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     populateManufacturers();
     populateRegions();
+
 });
 
 // Initialize map
@@ -103,8 +117,12 @@ function initializeMap() {
             // Base layer
             new ol.layer.Tile({
                 source: new ol.source.XYZ({
-                    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    tileLoadFunction: function(tile, src) {
+                        // Append a random query parameter to bypass cache
+                        tile.getImage().src = src + '?cache_bust=' + Math.random();
+                    }
                 })
             }),
             // Vector layer for circles and lines
@@ -168,8 +186,8 @@ function populateRegions() {
     });
 }
 
-// Update countries based on selected region (Origin)
-function updateOriginCountries() {
+// Update countries based on selected region (Origin) - ASYNC
+async function updateOriginCountries() {
     const regionSelect = document.getElementById('origin-region');
     const countrySelect = document.getElementById('origin-country');
     const airportSelect = document.getElementById('origin');
@@ -182,43 +200,62 @@ function updateOriginCountries() {
     
     const selectedRegion = regionSelect.value;
     
-    if (selectedRegion && regionMapping[selectedRegion]) {
-        const countries = regionMapping[selectedRegion];
+    if (selectedRegion) {
+        // Format region name for the filename (e.g., "North America" -> "north_america")
+        const regionFilename = selectedRegion.toLowerCase().replace(/ /g, '_');
         
-        // Filtrar países que têm aeroportos na base de dados
-        const availableCountries = countries.filter(country => 
-            airportsDatabase.some(airport => airport.country === country)
-        ).sort();
-        
-        availableCountries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            countrySelect.appendChild(option);
-        });
-        
-        countrySelect.disabled = false;
+        // Load data if not in cache
+        if (!airportDataCache[selectedRegion]) {
+            try {
+                console.log(`Fetching airport data for: ${selectedRegion}`);
+                const response = await fetch(`data/${regionFilename}.json`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                airportDataCache[selectedRegion] = await response.json();
+                console.log(`Data for ${selectedRegion} loaded and cached.`);
+            } catch (error) {
+                console.error(`Failed to load airport data for region: ${selectedRegion}`, error);
+                alert(`Could not load airport data for ${selectedRegion}. Please check the console for errors.`);
+                return;
+            }
+        }
+
+        const airports = airportDataCache[selectedRegion];
+        if (airports && airports.length > 0) {
+            // Get unique countries from the loaded data
+            const countries = [...new Set(airports.map(airport => airport.country))].sort();
+            
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+            
+            countrySelect.disabled = false;
+        }
     }
 }
 
 // Update airports based on selected country (Origin)
 function updateOriginAirports() {
+    const regionSelect = document.getElementById('origin-region');
     const countrySelect = document.getElementById('origin-country');
     const airportSelect = document.getElementById('origin');
     
-    // Clear airports
     airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
+    const selectedRegion = regionSelect.value;
     const selectedCountry = countrySelect.value;
     
-    if (selectedCountry) {
-        // Filter airports from selected country
-        const countryAirports = airportsDatabase
+    if (selectedRegion && selectedCountry && airportDataCache[selectedRegion]) {
+        const airports = airportDataCache[selectedRegion]
             .filter(airport => airport.country === selectedCountry)
             .sort((a, b) => a.city.localeCompare(b.city));
         
-        countryAirports.forEach(airport => {
+        airports.forEach(airport => {
             const option = document.createElement('option');
             option.value = airport.code;
             option.textContent = `${airport.city} (${airport.code})`;
@@ -229,13 +266,12 @@ function updateOriginAirports() {
     }
 }
 
-// Update countries based on selected region (Destination)
-function updateDestinationCountries() {
+// Update countries based on selected region (Destination) - ASYNC
+async function updateDestinationCountries() {
     const regionSelect = document.getElementById('destination-region');
     const countrySelect = document.getElementById('destination-country');
     const airportSelect = document.getElementById('destination');
     
-    // Clear dependent selections
     countrySelect.innerHTML = '<option value="">Select country</option>';
     countrySelect.disabled = true;
     airportSelect.innerHTML = '<option value="">Select airport</option>';
@@ -243,43 +279,59 @@ function updateDestinationCountries() {
     
     const selectedRegion = regionSelect.value;
     
-    if (selectedRegion && regionMapping[selectedRegion]) {
-        const countries = regionMapping[selectedRegion];
+    if (selectedRegion) {
+        const regionFilename = selectedRegion.toLowerCase().replace(/ /g, '_');
         
-        // Filter countries that have airports in the database
-        const availableCountries = countries.filter(country => 
-            airportsDatabase.some(airport => airport.country === country)
-        ).sort();
-        
-        availableCountries.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            countrySelect.appendChild(option);
-        });
-        
-        countrySelect.disabled = false;
+        if (!airportDataCache[selectedRegion]) {
+            try {
+                console.log(`Fetching airport data for: ${selectedRegion}`);
+                const response = await fetch(`data/${regionFilename}.json`);
+                 if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                airportDataCache[selectedRegion] = await response.json();
+                console.log(`Data for ${selectedRegion} loaded and cached.`);
+            } catch (error) {
+                console.error(`Failed to load airport data for region: ${selectedRegion}`, error);
+                alert(`Could not load airport data for ${selectedRegion}. Please check the console for errors.`);
+                return;
+            }
+        }
+
+        const airports = airportDataCache[selectedRegion];
+        if (airports && airports.length > 0) {
+            const countries = [...new Set(airports.map(airport => airport.country))].sort();
+            
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                countrySelect.appendChild(option);
+            });
+            
+            countrySelect.disabled = false;
+        }
     }
 }
 
 // Update airports based on selected country (Destination)
 function updateDestinationAirports() {
+    const regionSelect = document.getElementById('destination-region');
     const countrySelect = document.getElementById('destination-country');
     const airportSelect = document.getElementById('destination');
     
-    // Clear airports
     airportSelect.innerHTML = '<option value="">Select airport</option>';
     airportSelect.disabled = true;
     
+    const selectedRegion = regionSelect.value;
     const selectedCountry = countrySelect.value;
     
-    if (selectedCountry) {
-        // Filter airports from selected country
-        const countryAirports = airportsDatabase
+    if (selectedRegion && selectedCountry && airportDataCache[selectedRegion]) {
+        const airports = airportDataCache[selectedRegion]
             .filter(airport => airport.country === selectedCountry)
             .sort((a, b) => a.city.localeCompare(b.city));
         
-        countryAirports.forEach(airport => {
+        airports.forEach(airport => {
             const option = document.createElement('option');
             option.value = airport.code;
             option.textContent = `${airport.city} (${airport.code})`;
@@ -365,7 +417,7 @@ function setOrigin() {
     const selectedCode = originSelect.value;
     
     if (selectedCode) {
-        const airport = airportsDatabase.find(a => a.code === selectedCode);
+        const airport = findAirportByCode(selectedCode);
         
         if (airport) {
             // Limpar rota anterior
@@ -403,7 +455,7 @@ function addWaypoint() {
     const selectedCode = destinationSelect.value;
     
     if (selectedCode && routePoints.length > 0) {
-        const airport = airportsDatabase.find(a => a.code === selectedCode);
+        const airport = findAirportByCode(selectedCode);
         const lastPoint = routePoints[routePoints.length - 1];
         
         if (airport && airport.code !== lastPoint.code) {
@@ -951,12 +1003,3 @@ function testDistanceCalculations() {
     console.log('✅ Círculos geodésicos implementados - visual deve coincidir com validação');
     console.log('=== FIM DOS TESTES ===');
 }
-
-// Executar testes automaticamente quando a página carregar (apenas em desenvolvimento)
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(() => {
-        if (console && typeof console.log === 'function') {
-            testDistanceCalculations();
-        }
-    }, 2000);
-});

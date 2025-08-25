@@ -1,0 +1,22 @@
+[
+    {"code": "BZE","city": "Belize City","country": "Belize","lat": 17.5394,"lng": -88.3083,"name": "Philip S. W. Goldson International Airport"},
+    {"code": "LIR","city": "Liberia","country": "Costa Rica","lat": 10.5933,"lng": -85.5444,"name": "Daniel Oduber Quirós International Airport"},
+    {"code": "SJO","city": "San José","country": "Costa Rica","lat": 9.9939,"lng": -84.2089,"name": "Juan Santamaría International Airport"},
+    {"code": "SAL","city": "San Salvador","country": "El Salvador","lat": 13.4409,"lng": -89.0556,"name": "Monseñor Óscar Arnulfo Romero International Airport"},
+    {"code": "GUA","city": "Guatemala City","country": "Guatemala","lat": 14.5833,"lng": -90.5275,"name": "La Aurora International Airport"},
+    {"code": "SAP","city": "San Pedro Sula","country": "Honduras","lat": 15.4528,"lng": -87.9236,"name": "Ramón Villeda Morales International Airport"},
+    {"code": "TGU","city": "Tegucigalpa","country": "Honduras","lat": 14.0608,"lng": -87.2172,"name": "Toncontín International Airport"},
+    {"code": "ACA","city": "Acapulco","country": "Mexico","lat": 16.7569,"lng": -99.7539,"name": "General Juan N. Álvarez International Airport"},
+    {"code": "CUN","city": "Cancún","country": "Mexico","lat": 21.0364,"lng": -86.877,"name": "Cancún International Airport"},
+    {"code": "CZM","city": "Cozumel","country": "Mexico","lat": 20.5225,"lng": -86.9256,"name": "Cozumel International Airport"},
+    {"code": "GDL","city": "Guadalajara","country": "Mexico","lat": 20.5218,"lng": -103.3111,"name": "Miguel Hidalgo y Costilla Guadalajara International Airport"},
+    {"code": "SJD","city": "Los Cabos","country": "Mexico","lat": 23.1518,"lng": -109.7211,"name": "Los Cabos International Airport"},
+    {"code": "MZT","city": "Mazatlán","country": "Mexico","lat": 23.1614,"lng": -106.2658,"name": "General Rafael Buelna International Airport"},
+    {"code": "MEX","city": "Mexico City","country": "Mexico","lat": 19.4363,"lng": -99.0721,"name": "Mexico City International Airport"},
+    {"code": "MTY","city": "Monterrey","country": "Mexico","lat": 25.7785,"lng": -100.1069,"name": "General Mariano Escobedo International Airport"},
+    {"code": "PVR","city": "Puerto Vallarta","country": "Mexico","lat": 20.6801,"lng": -105.2544,"name": "Licenciado Gustavo Díaz Ordaz International Airport"},
+    {"code": "TIJ","city": "Tijuana","country": "Mexico","lat": 32.5411,"lng": -116.97,"name": "General Abelardo L. Rodríguez International Airport"},
+    {"code": "MGA","city": "Managua","country": "Nicaragua","lat": 12.1414,"lng": -86.1681,"name": "Augusto C. Sandino International Airport"},
+    {"code": "PAC","city": "Panama City","country": "Panama","lat": 8.9733,"lng": -79.5556,"name": "Marcos A. Gelabert International Airport"},
+    {"code": "PTY","city": "Panama City","country": "Panama","lat": 9.0714,"lng": -79.3834,"name": "Tocumen International Airport"}
+]

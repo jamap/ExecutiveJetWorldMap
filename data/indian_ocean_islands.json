@@ -1,0 +1,12 @@
+[
+    {"code": "IXZ","city": "Port Blair","country": "Andaman and Nicobar Islands","lat": 11.6411,"lng": 92.7297,"name": "Veer Savarkar International Airport"},
+    {"code": "NKW","city": "Diego Garcia","country": "British Indian Ocean Territory","lat": -7.3133,"lng": 72.4111,"name": "Diego Garcia Naval Support Facility"},
+    {"code": "CXI","city": "Christmas Island","country": "Christmas Island","lat": -10.4506,"lng": 105.6903,"name": "Christmas Island Airport"},
+    {"code": "CCK","city": "West Island","country": "Cocos (Keeling) Islands","lat": -12.1883,"lng": 96.8339,"name": "Cocos (Keeling) Islands Airport"},
+    {"code": "HAH","city": "Moroni","country": "Comoros","lat": -11.5336,"lng": 43.2719,"name": "Prince Said Ibrahim International Airport"},
+    {"code": "TNR","city": "Antananarivo","country": "Madagascar","lat": -18.7969,"lng": 47.4785,"name": "Ivato International Airport"},
+    {"code": "MLE","city": "Malé","country": "Maldives","lat": 4.1917,"lng": 73.5289,"name": "Velana International Airport"},
+    {"code": "MRU","city": "Port Louis","country": "Mauritius","lat": -20.4302,"lng": 57.6836,"name": "Sir Seewoosagur Ramgoolam International Airport"},
+    {"code": "RUN","city": "Saint-Denis","country": "Reunion","lat": -20.8872,"lng": 55.5103,"name": "Roland Garros Airport"},
+    {"code": "SEZ","city": "Victoria","country": "Seychelles","lat": -4.6743,"lng": 55.5218,"name": "Seychelles International Airport"}
+]
