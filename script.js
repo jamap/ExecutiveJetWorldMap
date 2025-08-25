@@ -413,8 +413,8 @@ function addWaypoint() {
             console.log(`Checking route: ${lastPoint.city} (${lastPoint.code}) → ${airport.city} (${airport.code})`);
             console.log(`Distância: ${distance.toFixed(2)} km, Alcance: ${currentRange.toLocaleString()} km`);
             
-            // Adicionar margem de segurança de 2% para compensar imprecisões cartográficas
-            const safetyMargin = currentRange * 0.98;
+            // Adicionar margem de segurança de 20% para compensar imprecisões cartográficas e segurança de vôo
+            const safetyMargin = currentRange * 0.80;
             
             if (distance <= safetyMargin) {
                 // Adicionar à rota
@@ -440,17 +440,18 @@ function addWaypoint() {
                 
                 console.log(`✅ Rota adicionada com sucesso!`);
             } else {
-                const shortfall = distance - currentRange;
-                const percentage = ((distance / currentRange - 1) * 100);
+                const shortfall = distance - (currentRange * 0.8);
+                const percentage = ((distance / (currentRange * 0.8) - 1) * 100);
                 
-                console.log(`❌ Destino fora do alcance por ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além do alcance)`);
                 
-                alert(`Destino fora do alcance!\n\n` +
-                      `📍 Rota: ${lastPoint.city} → ${airport.city}\n` +
-                      `📏 Distância: ${distance.toFixed(0)} km\n` +
-                      `✈️ Alcance: ${currentRange.toLocaleString()} km\n` +
-                      `❌ Déficit: ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além)\n\n` +
-                      `💡 Sugestão: Escolha um aeroporto intermediário`);
+                console.log(`❌ Destination out of range by ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além do alcance)`);
+                
+                alert(`Destination out of safe range (80% of Aircraft Max range)\n\n` +
+                      `📍 Route: ${lastPoint.city} → ${airport.city}\n` +
+                      `📏 Distance: ${distance.toFixed(0)} km\n` +
+                      `✈️ Safe Range: ${(currentRange*0.8).toLocaleString()} km\n` +
+                      `❌ Difference: ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além)\n\n` +
+                      `💡 Sugestion: Pich an intermediary airport`);
                 destinationSelect.value = '';
             }
         } else {

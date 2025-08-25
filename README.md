@@ -639,53 +639,40 @@ For complete Docker setup, configuration, and troubleshooting, see **[DOCKER.md]
 ## 📁 **Project Structure**
 
 ```
-worldmaphtml/
+ExecutiveJetWorldMap/
 │
-├── index.html              # Main interface
-├── style.css               # Responsive CSS styles
-├── script.js               # JavaScript logic
-├── data.js                 # Database (aircraft + airports)
-├── README.md               # This documentation
-├── DOCKER.md               # Docker setup guide
+├── index.html              # Main interface (HTML5)
+├── style.css               # Responsive styles (CSS3)
+├── script.js               # Core application logic (JavaScript ES6+)
+├── data.js                 # Aircraft and airport database
 │
-├── Dockerfile              # Docker development build
-├── Dockerfile.prod         # Docker production build (hardened)
-├── docker-compose.yml      # Docker Compose configuration
-├── .dockerignore           # Docker build optimization
-├── docker-scripts.sh       # Docker utility scripts
+├── Dockerfile              # Docker build for development environment
+├── docker-compose.yml      # Docker Compose configuration for easy startup
+├── .dockerignore           # Specifies files to ignore in Docker build
 │
-└── assets/ (future)
-    ├── icons/              # Aircraft icons
-    ├── screenshots/        # Screenshots
-    └── docs/               # Additional documentation
+├── rebuild.bat             # Utility script for rebuilding the Docker image on Windows
+├── LICENSE                 # Project license file (MIT)
+└── README.md               # This documentation
 ```
 
 ### **Main Files**
 
-| File | Lines | Purpose | Main Functions |
-|---------|--------|-----------|-------------------|
-| **index.html** | ~120 | HTML interface | Layout, forms, map container |
-| **style.css** | ~200 | Styling | Responsive layout, popups, controls |
-| **script.js** | ~950 | Main logic | Map, validations, geodesic calculations |
-| **data.js** | ~600 | Database | 80 aircraft, 550 airports, regions |
-| **Dockerfile** | ~80 | Development build | Alpine + Apache setup |
-| **Dockerfile.prod** | ~120 | Production build | Hardened security configuration |
-| **docker-compose.yml** | ~45 | Container orchestration | Service definition, networking |
-| **docker-scripts.sh** | ~300 | Docker utilities | Build, run, manage containers |
-| **DOCKER.md** | ~500 | Docker documentation | Setup, deployment, troubleshooting |
+| File | Lines | Purpose |
+|----------------------|-------|------------------------------------------------|
+| **script.js** | ~960 | Core logic: map handling, route validation, geodesic calculations |
+| **data.js** | ~600 | Database: 80+ aircraft, 550+ airports, regional data |
+| **style.css** | ~265 | Styling: responsive layout, popups, controls |
+| **index.html** | ~130 | HTML structure: layout, forms, map container |
+| **Dockerfile** | ~15 | Docker build instructions (Alpine + Python HTTP Server) |
+| **docker-compose.yml** | ~10 | Docker Compose service definition |
 
 ### **Code Statistics**
 
-- **Total**: ~2,900 lines (including Docker setup)
-- **Application**: ~1,870 lines (65%)
-  - **JavaScript**: 33% (complex logic)
-  - **Data**: 21% (structured database)  
-  - **CSS**: 7% (clean interface)
-  - **HTML**: 4% (interface structure)
-- **Docker/DevOps**: ~1,030 lines (35%)
-  - **Configuration**: 15% (Dockerfiles, Compose)
-  - **Scripts**: 10% (Automation utilities)
-  - **Documentation**: 10% (Docker guides)
+- **Total Lines**: ~2,000 lines (Application + Config)
+- **Application Logic (JS)**: ~48%
+- **Database (JS)**: ~30%
+- **Styling & Structure (CSS/HTML)**: ~20%
+- **Configuration (Docker)**: ~2%
 
 ---
 
