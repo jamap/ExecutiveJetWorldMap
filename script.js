@@ -1,3 +1,84 @@
+// Toggle panel minimization
+function togglePanel(panelId) {
+    console.log('Toggling panel:', panelId);
+    const panel = document.getElementById(panelId);
+    
+    if (!panel) {
+        console.error('Panel not found:', panelId);
+        return;
+    }
+    
+    const minimizeBtn = panel.querySelector('.minimize-btn');
+    
+    if (panel.classList.contains('minimized')) {
+        panel.classList.remove('minimized');
+        minimizeBtn.textContent = '−';
+        minimizeBtn.title = 'Minimizar painel';
+        console.log('Panel expanded');
+    } else {
+        panel.classList.add('minimized');
+        minimizeBtn.textContent = '+';
+        minimizeBtn.title = 'Expandir painel';
+        console.log('Panel minimized');
+    }
+}
+
+// Make panels draggable - SIMPLIFIED VERSION
+let dragState = {
+    isDragging: false,
+    dragPanel: null,
+    startX: 0,
+    startY: 0
+};
+
+function makePanelsDraggable() {
+    console.log('Making panels draggable...');
+    const panels = document.querySelectorAll('.floating-panel');
+    console.log('Found panels:', panels.length);
+    
+    panels.forEach((panel) => {
+        const header = panel.querySelector('.panel-header');
+        header.style.cursor = 'move';
+        
+        header.addEventListener('mousedown', function(e) {
+            if (e.target.classList.contains('minimize-btn')) {
+                return;
+            }
+            
+            console.log('Drag start for:', panel.id);
+            dragState.isDragging = true;
+            dragState.dragPanel = panel;
+            dragState.startX = e.clientX - panel.offsetLeft;
+            dragState.startY = e.clientY - panel.offsetTop;
+            
+            e.preventDefault();
+        });
+    });
+    
+    // Global mouse events
+    document.addEventListener('mousemove', function(e) {
+        if (!dragState.isDragging || !dragState.dragPanel) return;
+        
+        e.preventDefault();
+        const newX = e.clientX - dragState.startX;
+        const newY = e.clientY - dragState.startY;
+        
+        dragState.dragPanel.style.left = newX + 'px';
+        dragState.dragPanel.style.top = newY + 'px';
+        dragState.dragPanel.style.right = 'auto';
+        dragState.dragPanel.style.bottom = 'auto';
+    });
+    
+    document.addEventListener('mouseup', function(e) {
+        if (dragState.isDragging) {
+            console.log('Drag end for:', dragState.dragPanel.id);
+            dragState.isDragging = false;
+            dragState.dragPanel = null;
+        }
+    });
+}
+
+
 // Global variables
 let map;
 let currentAircraft = null;
@@ -84,12 +165,19 @@ async function loadAndDisplayAllAirports() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing application...');
+    
     initializeMap();
     populateManufacturers();
     loadAndDisplayAllAirports();
     
     // Inicializar interface de status da rota
     updateRouteInterface();
+    
+    // Tornar os painéis arrastáveis
+    makePanelsDraggable();
+    
+    console.log('Application initialized successfully');
 });
 
 // Initialize map
@@ -555,6 +643,11 @@ function clearMapFeatures() {
 
 // Atualizar interface para refletir seleção atual
 function updateRouteInterface() {
+    console.log('Updating route interface...');
+    
+    // Atualizar lista de rota no painel flutuante
+    updateRouteList();
+    
     const statusDiv = document.querySelector('.route-status') || createRouteStatusDiv();
     
     // Verificar se há aeronave selecionada
@@ -592,9 +685,16 @@ function createRouteStatusDiv() {
             line-height: 1.4;
         `;
         
-        // Inserir após os controles de aeronave
-        const aircraftSection = document.querySelector('.aircraft-selection');
-        aircraftSection.parentNode.insertBefore(statusDiv, aircraftSection.nextSibling);
+        // Inserir no painel de rota
+        const routePanel = document.getElementById('route-panel');
+        const panelContent = routePanel.querySelector('.panel-content');
+        
+        if (panelContent) {
+            panelContent.appendChild(statusDiv);
+        } else {
+            // Fallback: adicionar ao body se não encontrar o painel
+            document.body.appendChild(statusDiv);
+        }
     }
     return statusDiv;
 }
@@ -864,13 +964,22 @@ function calculateDestinationPoint(lat1, lng1, distance, bearing) {
 
 // Atualizar lista de rota
 function updateRouteList() {
+    console.log('updateRouteList called, routePoints.length:', routePoints.length);
     const routeList = document.getElementById('route-list');
+    
+    if (!routeList) {
+        console.error('Route list element not found!');
+        return;
+    }
+    
+    console.log('Route list element found, clearing content');
     routeList.innerHTML = '';
     
     if (routePoints.length === 0) {
         const li = document.createElement('li');
         li.textContent = 'No route defined';
         routeList.appendChild(li);
+        console.log('Added "No route defined" message');
         return;
     }
     
@@ -918,8 +1027,11 @@ function fitMapToRoute() {
 
 // Limpar rota
 function clearRoute() {
+    console.log('clearRoute() called');
+    
     // Limpar pontos da rota
     routePoints = [];
+    console.log('Route points cleared');
     
     // Limpar features do mapa (mas manter marcadores de aeroportos)
     clearMapFeatures();
@@ -931,32 +1043,12 @@ function clearRoute() {
     updateRouteList();
     updateRouteInterface();
     
-    // Resetar todos os filtros de origem
-    const originRegionSelect = document.getElementById('origin-region');
-    const originCountrySelect = document.getElementById('origin-country');
-    const originSelect = document.getElementById('origin');
-    
-    originRegionSelect.value = '';
-    originCountrySelect.innerHTML = '<option value="">Select country</option>';
-    originCountrySelect.disabled = true;
-    originSelect.innerHTML = '<option value="">Select airport</option>';
-    originSelect.disabled = true;
-    
-    // Reset all destination filters
-    const destinationRegionSelect = document.getElementById('destination-region');
-    const destinationCountrySelect = document.getElementById('destination-country');
-    const destinationSelect = document.getElementById('destination');
-    
-    destinationRegionSelect.value = '';
-    destinationRegionSelect.disabled = true;
-    destinationCountrySelect.innerHTML = '<option value="">Select country</option>';
-    destinationCountrySelect.disabled = true;
-    destinationSelect.innerHTML = '<option value="">Select airport</option>';
-    destinationSelect.disabled = true;
-    
     // Disable clear button
     const clearRouteButton = document.getElementById('clear-route');
-    clearRouteButton.disabled = true;
+    if (clearRouteButton) {
+        clearRouteButton.disabled = true;
+        console.log('Clear button disabled');
+    }
     
     // Voltar à visualização mundial
     map.getView().animate({
@@ -964,6 +1056,8 @@ function clearRoute() {
         zoom: 2,
         duration: 1000
     });
+    
+    console.log('Route cleared successfully');
 }
 
 // Função para teste de cálculos de distância (debug)
@@ -1003,3 +1097,4 @@ function testDistanceCalculations() {
     console.log('✅ Círculos geodésicos implementados - visual deve coincidir com validação');
     console.log('=== FIM DOS TESTES ===');
 }
+ 

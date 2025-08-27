@@ -14,16 +14,19 @@
 <body>
     <div class="container">
         <header>
-            <h1>Executive Aviation Route Planner 
-            <h2>For Non-Professional and recreational purposes  
-            <h4>Version 1.0 - Source Code on https://github.com/jamap/ExecutiveJetWorldMap </h4> </h2> </h1>
+            <h1>Executive Aviation Route Planner</h1>
+            <h2>For Non-Professional and recreational purposes</h2>
+            <p>Version 1.0 - <a href="https://github.com/jamap/ExecutiveJetWorldMap" target="_blank">Source Code on GitHub</a></p>
         </header>
         
         <div class="main-content">
-            <div class="controls-panel">
-                <div class="aircraft-selection">
-                    <h3>Aircraft Selection</h3>
-                    
+            <!-- Aircraft Selection Floating Panel -->
+            <div class="floating-panel" id="aircraft-panel">
+                <div class="panel-header">
+                    <h3>✈️ Aircraft Selection</h3>
+                    <button class="minimize-btn" onclick="togglePanel('aircraft-panel')">−</button>
+                </div>
+                <div class="panel-content">
                     <div class="form-group">
                         <label for="manufacturer">Manufacturer:</label>
                         <select id="manufacturer" onchange="updateModels()">
@@ -43,17 +46,22 @@
                         <input type="text" id="range" readonly placeholder="Select model">
                     </div>
                 </div>
-                
-                <div class="route-planning">
-                    <h3>Route Planning</h3>
-                    
+            </div>
+
+            <!-- Route Planning Floating Panel -->
+            <div class="floating-panel" id="route-panel">
+                <div class="panel-header">
+                    <h3>🗺️ Route Planning</h3>
+                    <button class="minimize-btn" onclick="togglePanel('route-panel')">−</button>
+                </div>
+                <div class="panel-content">
                     <div class="map-instructions">
-                        <p>🎯 <strong>Como usar:</strong></p>
+                        <p>🎯 <strong>How to use:</strong></p>
                         <ul>
-                            <li>Primeiro selecione uma aeronave acima</li>
-                            <li>Clique em um aeroporto no mapa para definir origem</li>
-                            <li>Clique em outros aeroportos para adicionar waypoints</li>
-                            <li>Clique em um waypoint existente para truncar a rota</li>
+                            <li>First select an aircraft on Aircraft Selection panel</li>
+                            <li>Click on an airport on the map to set origin</li>
+                            <li>Click on other airports to add waypoints</li>
+                            <li>Click on an existing waypoint to truncate route</li>
                         </ul>
                     </div>
                     
