@@ -127,6 +127,41 @@ input[type="text"]:disabled {
     margin-bottom: 1.5rem;
 }
 
+.map-instructions {
+    background-color: #e8f5e8;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid #27ae60;
+}
+
+.map-instructions p {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #27ae60;
+    font-size: 0.95rem;
+}
+
+.map-instructions ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.map-instructions li {
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    color: #2c5530;
+    line-height: 1.4;
+}
+
+.map-instructions li::before {
+    content: "• ";
+    color: #27ae60;
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
 .route-info {
     background-color: #f8f9fa;
     padding: 1rem;

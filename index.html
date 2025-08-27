@@ -47,57 +47,14 @@
                 <div class="route-planning">
                     <h3>Route Planning</h3>
                     
-                    <!-- Origin Filters -->
-                    <div class="airport-filters">
-                        <h4>Origin:</h4>
-                        <div class="form-group">
-                            <label for="origin-region">Region:</label>
-                            <select id="origin-region" onchange="updateOriginCountries()" disabled>
-                                <option value="">Select region</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="origin-country">Country:</label>
-                            <select id="origin-country" onchange="updateOriginAirports()" disabled>
-                                <option value="">Select country</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="origin">Airport:</label>
-                            <select id="origin" onchange="setOrigin()" disabled>
-                                <option value="">Select airport</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Destination Filters -->
-                    <div class="airport-filters">
-                        <h4>Next Destination:</h4>
-                        <div class="form-group">
-                            <label for="destination-region">Region:</label>
-                            <select id="destination-region" onchange="updateDestinationCountries()" disabled>
-                                <option value="">Select region</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="destination-country">Country:</label>
-                            <select id="destination-country" onchange="updateDestinationAirports()" disabled>
-                                <option value="">Select country</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="destination">Airport:</label>
-                            <select id="destination" onchange="addWaypoint()" disabled>
-                                <option value="">Select airport</option>
-                            </select>
-                            <small class="destination-hint">
-                                💡 To add more stops, select again after each destination
-                            </small>
-                        </div>
+                    <div class="map-instructions">
+                        <p>🎯 <strong>Como usar:</strong></p>
+                        <ul>
+                            <li>Primeiro selecione uma aeronave acima</li>
+                            <li>Clique em um aeroporto no mapa para definir origem</li>
+                            <li>Clique em outros aeroportos para adicionar waypoints</li>
+                            <li>Clique em um waypoint existente para truncar a rota</li>
+                        </ul>
                     </div>
                     
                     <div class="route-info">

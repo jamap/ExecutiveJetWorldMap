@@ -36,11 +36,60 @@ function drawAirportMarker(airport) {
     airportMarkers.push(markerFeature);
 }
 
+// Load and display all airports from all regions
+async function loadAndDisplayAllAirports() {
+    console.log('Loading all airports from regional databases...');
+    
+    const regions = [
+        'africa', 'asia', 'atlantic_islands', 'caribbean', 'central_america',
+        'europe', 'indian_ocean_islands', 'middle_east', 'north_america', 
+        'north_atlantic', 'oceania', 'pacific', 'south_america'
+    ];
+    
+    let totalAirports = 0;
+    
+    for (const regionFilename of regions) {
+        try {
+            console.log(`Loading airports from: ${regionFilename}.json`);
+            const response = await fetch(`data/${regionFilename}.json`);
+            
+            if (!response.ok) {
+                console.warn(`Could not load ${regionFilename}.json: ${response.status}`);
+                continue;
+            }
+            
+            const airports = await response.json();
+            
+            // Display each airport as a marker on the map
+            airports.forEach(airport => {
+                if (airport.lat && airport.lng && airport.code) {
+                    drawAirportMarker(airport);
+                    totalAirports++;
+                } else {
+                    console.warn(`Invalid airport data:`, airport);
+                }
+            });
+            
+            // Cache the data for future use
+            const regionDisplayName = regionFilename.replace(/_/g, ' ')
+                .replace(/\b\w/g, char => char.toUpperCase());
+            airportDataCache[regionDisplayName] = airports;
+            
+        } catch (error) {
+            console.error(`Error loading ${regionFilename}.json:`, error);
+        }
+    }
+    
+    console.log(`Successfully loaded and displayed ${totalAirports} airports on the map`);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     populateManufacturers();
-    populateRegions();
-
+    loadAndDisplayAllAirports();
+    
+    // Inicializar interface de status da rota
+    updateRouteInterface();
 });
 
 // Initialize map
@@ -93,18 +142,49 @@ function initializeMap() {
                     })
                 });
             } else if (type === 'airport-marker') {
+                const airport = feature.get('airport');
+                
+                // Verificar se o aeroporto está na rota atual
+                const isInRoute = routePoints.some(point => point.code === airport.code);
+                const routeIndex = routePoints.findIndex(point => point.code === airport.code);
+                
+                let fillColor = '#2c3e50'; // Cor padrão
+                let strokeColor = '#ffffff'; // Borda padrão
+                let scale = 0.8;
+                let zIndex = 10;
+                
+                if (isInRoute) {
+                    if (routeIndex === 0) {
+                        // Aeroporto de origem - verde
+                        fillColor = '#27ae60';
+                        strokeColor = '#ffffff';
+                        scale = 1.0;
+                        zIndex = 15;
+                    } else {
+                        // Waypoints - laranja/dourado
+                        fillColor = '#f39c12';
+                        strokeColor = '#ffffff';
+                        scale = 0.9;
+                        zIndex = 12;
+                    }
+                }
+                
+                // Create SVG airplane icon with dynamic color
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="${fillColor}" stroke="${strokeColor}" stroke-width="1" d="M21,16V14L13,9V3.5A1.5,1.5 0 0,0 11.5,2A1.5,1.5 0 0,0 10,3.5V9L2,14V16L10,13.5V19L8,20.5V22L11.5,21L15,22V20.5L13,19V13.5L21,16Z"/>
+                </svg>`;
+                
+                const iconSrc = 'data:image/svg+xml,' + encodeURIComponent(svg);
+                
                 return new ol.style.Style({
-                    image: new ol.style.Circle({
-                        radius: 6,
-                        fill: new ol.style.Fill({
-                            color: '#ffffff'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: '#000000',
-                            width: 2
-                        })
+                    image: new ol.style.Icon({
+                        src: iconSrc,
+                        scale: scale,
+                        anchor: [0.5, 0.5],
+                        anchorXUnits: 'fraction',
+                        anchorYUnits: 'fraction'
                     }),
-                    zIndex: 10 // Ensure marker is drawn on top
+                    zIndex: zIndex
                 });
             }
         }
@@ -163,184 +243,15 @@ function populateManufacturers() {
     }
 }
 
-// Populate regions dropdown
-function populateRegions() {
-    const originRegionSelect = document.getElementById('origin-region');
-    const destinationRegionSelect = document.getElementById('destination-region');
-    
-    // Sort regions alphabetically
-    const sortedRegions = Object.keys(regionMapping).sort();
-    
-    sortedRegions.forEach(region => {
-        // Add to origin
-        const originOption = document.createElement('option');
-        originOption.value = region;
-        originOption.textContent = region;
-        originRegionSelect.appendChild(originOption);
-        
-        // Add to destination
-        const destinationOption = document.createElement('option');
-        destinationOption.value = region;
-        destinationOption.textContent = region;
-        destinationRegionSelect.appendChild(destinationOption);
-    });
-}
 
-// Update countries based on selected region (Origin) - ASYNC
-async function updateOriginCountries() {
-    const regionSelect = document.getElementById('origin-region');
-    const countrySelect = document.getElementById('origin-country');
-    const airportSelect = document.getElementById('origin');
-    
-    // Clear dependent selections
-    countrySelect.innerHTML = '<option value="">Select country</option>';
-    countrySelect.disabled = true;
-    airportSelect.innerHTML = '<option value="">Select airport</option>';
-    airportSelect.disabled = true;
-    
-    const selectedRegion = regionSelect.value;
-    
-    if (selectedRegion) {
-        // Format region name for the filename (e.g., "North America" -> "north_america")
-        const regionFilename = selectedRegion.toLowerCase().replace(/ /g, '_');
-        
-        // Load data if not in cache
-        if (!airportDataCache[selectedRegion]) {
-            try {
-                console.log(`Fetching airport data for: ${selectedRegion}`);
-                const response = await fetch(`data/${regionFilename}.json`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                airportDataCache[selectedRegion] = await response.json();
-                console.log(`Data for ${selectedRegion} loaded and cached.`);
-            } catch (error) {
-                console.error(`Failed to load airport data for region: ${selectedRegion}`, error);
-                alert(`Could not load airport data for ${selectedRegion}. Please check the console for errors.`);
-                return;
-            }
-        }
 
-        const airports = airportDataCache[selectedRegion];
-        if (airports && airports.length > 0) {
-            // Get unique countries from the loaded data
-            const countries = [...new Set(airports.map(airport => airport.country))].sort();
-            
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                countrySelect.appendChild(option);
-            });
-            
-            countrySelect.disabled = false;
-        }
-    }
-}
 
-// Update airports based on selected country (Origin)
-function updateOriginAirports() {
-    const regionSelect = document.getElementById('origin-region');
-    const countrySelect = document.getElementById('origin-country');
-    const airportSelect = document.getElementById('origin');
-    
-    airportSelect.innerHTML = '<option value="">Select airport</option>';
-    airportSelect.disabled = true;
-    
-    const selectedRegion = regionSelect.value;
-    const selectedCountry = countrySelect.value;
-    
-    if (selectedRegion && selectedCountry && airportDataCache[selectedRegion]) {
-        const airports = airportDataCache[selectedRegion]
-            .filter(airport => airport.country === selectedCountry)
-            .sort((a, b) => a.city.localeCompare(b.city));
-        
-        airports.forEach(airport => {
-            const option = document.createElement('option');
-            option.value = airport.code;
-            option.textContent = `${airport.city} (${airport.code})`;
-            airportSelect.appendChild(option);
-        });
-        
-        airportSelect.disabled = false;
-    }
-}
 
-// Update countries based on selected region (Destination) - ASYNC
-async function updateDestinationCountries() {
-    const regionSelect = document.getElementById('destination-region');
-    const countrySelect = document.getElementById('destination-country');
-    const airportSelect = document.getElementById('destination');
-    
-    countrySelect.innerHTML = '<option value="">Select country</option>';
-    countrySelect.disabled = true;
-    airportSelect.innerHTML = '<option value="">Select airport</option>';
-    airportSelect.disabled = true;
-    
-    const selectedRegion = regionSelect.value;
-    
-    if (selectedRegion) {
-        const regionFilename = selectedRegion.toLowerCase().replace(/ /g, '_');
-        
-        if (!airportDataCache[selectedRegion]) {
-            try {
-                console.log(`Fetching airport data for: ${selectedRegion}`);
-                const response = await fetch(`data/${regionFilename}.json`);
-                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                airportDataCache[selectedRegion] = await response.json();
-                console.log(`Data for ${selectedRegion} loaded and cached.`);
-            } catch (error) {
-                console.error(`Failed to load airport data for region: ${selectedRegion}`, error);
-                alert(`Could not load airport data for ${selectedRegion}. Please check the console for errors.`);
-                return;
-            }
-        }
 
-        const airports = airportDataCache[selectedRegion];
-        if (airports && airports.length > 0) {
-            const countries = [...new Set(airports.map(airport => airport.country))].sort();
-            
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                countrySelect.appendChild(option);
-            });
-            
-            countrySelect.disabled = false;
-        }
-    }
-}
 
-// Update airports based on selected country (Destination)
-function updateDestinationAirports() {
-    const regionSelect = document.getElementById('destination-region');
-    const countrySelect = document.getElementById('destination-country');
-    const airportSelect = document.getElementById('destination');
-    
-    airportSelect.innerHTML = '<option value="">Select airport</option>';
-    airportSelect.disabled = true;
-    
-    const selectedRegion = regionSelect.value;
-    const selectedCountry = countrySelect.value;
-    
-    if (selectedRegion && selectedCountry && airportDataCache[selectedRegion]) {
-        const airports = airportDataCache[selectedRegion]
-            .filter(airport => airport.country === selectedCountry)
-            .sort((a, b) => a.city.localeCompare(b.city));
-        
-        airports.forEach(airport => {
-            const option = document.createElement('option');
-            option.value = airport.code;
-            option.textContent = `${airport.city} (${airport.code})`;
-            airportSelect.appendChild(option);
-        });
-        
-        airportSelect.disabled = false;
-    }
-}
+
+
+
 
 // Atualizar modelos baseado no fabricante selecionado
 function updateModels() {
@@ -368,9 +279,6 @@ function updateModels() {
         
         modelSelect.disabled = false;
     }
-    
-    // Habilitar seleção de origem apenas se aeronave estiver selecionada
-    updateOriginState();
 }
 
 // Atualizar alcance baseado no modelo selecionado
@@ -394,124 +302,20 @@ function updateRange() {
                 model: model.name,
                 range: currentRange
             };
+            
+            console.log(`Aeronave selecionada: ${currentAircraft.manufacturer} ${currentAircraft.model} (${currentRange.toLocaleString()} km)`);
         }
     }
     
-    // Habilitar seleção de origem
-    updateOriginState();
+    // Atualizar interface de rota
+    updateRouteInterface();
 }
 
-// Atualizar estado dos filtros de origem
-function updateOriginState() {
-    const originRegionSelect = document.getElementById('origin-region');
-    const isEnabled = currentAircraft && currentRange > 0;
-    originRegionSelect.disabled = !isEnabled;
-}
 
-// Definir origem
-function setOrigin() {
-    const originSelect = document.getElementById('origin');
-    const destinationRegionSelect = document.getElementById('destination-region');
-    const clearRouteButton = document.getElementById('clear-route');
-    
-    const selectedCode = originSelect.value;
-    
-    if (selectedCode) {
-        const airport = findAirportByCode(selectedCode);
-        
-        if (airport) {
-            // Limpar rota anterior
-            clearRoute();
-            
-            // Adicionar origem à rota
-            routePoints = [airport];
-            
-            // Centralizar mapa na origem
-            map.getView().animate({
-                center: ol.proj.fromLonLat([airport.lng, airport.lat]),
-                zoom: 5,
-                duration: 1000
-            });
-            
-            // Desenhar círculo de alcance
-            drawRangeCircle(airport);
-            
-            // Atualizar lista de rota
-            updateRouteList();
-            
-            // Draw airport marker
-            drawAirportMarker(airport);
 
-            // Habilitar seleção de destino e botão limpar
-            destinationRegionSelect.disabled = false;
-            clearRouteButton.disabled = false;
-        }
-    }
-}
 
-// Adicionar waypoint com validação melhorada
-function addWaypoint() {
-    const destinationSelect = document.getElementById('destination');
-    const selectedCode = destinationSelect.value;
-    
-    if (selectedCode && routePoints.length > 0) {
-        const airport = findAirportByCode(selectedCode);
-        const lastPoint = routePoints[routePoints.length - 1];
-        
-        if (airport && airport.code !== lastPoint.code) {
-            // Calcular distância com mais precisão
-            const distance = calculateDistance(lastPoint.lat, lastPoint.lng, airport.lat, airport.lng);
-            
-            console.log(`Checking route: ${lastPoint.city} (${lastPoint.code}) → ${airport.city} (${airport.code})`);
-            console.log(`Distância: ${distance.toFixed(2)} km, Alcance: ${currentRange.toLocaleString()} km`);
-            
-            // Adicionar margem de segurança de 20% para compensar imprecisões cartográficas e segurança de vôo
-            const safetyMargin = currentRange * 0.80;
-            
-            if (distance <= safetyMargin) {
-                // Adicionar à rota
-                routePoints.push(airport);
-                
-                // Desenhar círculo de alcance para o novo ponto
-                drawRangeCircle(airport);
-                
-                // Desenhar linha de rota
-                drawRouteLine(lastPoint, airport);
 
-                // Draw airport marker
-                drawAirportMarker(airport);
-                
-                // Atualizar lista de rota
-                updateRouteList();
-                
-                // Resetar seleção de destino
-                destinationSelect.value = '';
-                
-                // Ajustar visualização do mapa
-                fitMapToRoute();
-                
-                console.log(`✅ Rota adicionada com sucesso!`);
-            } else {
-                const shortfall = distance - (currentRange * 0.8);
-                const percentage = ((distance / (currentRange * 0.8) - 1) * 100);
-                
-                
-                console.log(`❌ Destination out of range by ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além do alcance)`);
-                
-                alert(`Destination out of safe range (80% of Aircraft Max range)\n\n` +
-                      `📍 Route: ${lastPoint.city} → ${airport.city}\n` +
-                      `📏 Distance: ${distance.toFixed(0)} km\n` +
-                      `✈️ Safe Range: ${(currentRange*0.8).toLocaleString()} km\n` +
-                      `❌ Difference: ${shortfall.toFixed(0)} km (${percentage.toFixed(1)}% além)\n\n` +
-                      `💡 Sugestion: Pich an intermediary airport`);
-                destinationSelect.value = '';
-            }
-        } else {
-            destinationSelect.value = '';
-        }
 
-    }
-}
 
 // Configurar interação com popup
 function setupPopupInteraction() {
@@ -542,6 +346,17 @@ function setupPopupInteraction() {
         
         if (feature) {
             const type = feature.get('type');
+            
+            // Se clicou em um marcador de aeroporto, selecionar para rota
+            if (type === 'airport-marker') {
+                const airport = feature.get('airport');
+                selectAirportForRoute(airport);
+                // Esconder popup quando selecionar aeroporto
+                popupElement.style.display = 'none';
+                return;
+            }
+            
+            // Para outros tipos de features, mostrar popup informativo
             let content = '';
             
             if (type === 'range-circle') {
@@ -570,13 +385,6 @@ function setupPopupInteraction() {
                     <strong>Códigos:</strong> ${from.code} → ${to.code}<br>
                     <strong>Distância:</strong> ${parseInt(distance).toLocaleString()} km
                 `;
-            } else if (type === 'airport-marker') {
-                const airport = feature.get('airport');
-                content = `
-                    <strong>${airport.city} (${airport.code})</strong><br>
-                    ${airport.name}<br>
-                    <em>${airport.country}</em>
-                `;
             }
             
             if (content) {
@@ -597,6 +405,198 @@ function setupPopupInteraction() {
             target.style.cursor = hit ? 'pointer' : '';
         }
     });
+}
+
+// Função para selecionar aeroporto clicando no mapa
+function selectAirportForRoute(airport) {
+    // Verificar se uma aeronave foi selecionada
+    if (!currentAircraft || currentRange <= 0) {
+        alert('Primeiro selecione uma aeronave antes de escolher aeroportos.');
+        return;
+    }
+    
+    console.log(`Aeroporto selecionado: ${airport.city} (${airport.code})`);
+    
+    // Verificar se o aeroporto clicado já está na rota
+    const existingIndex = routePoints.findIndex(point => point.code === airport.code);
+    
+    if (existingIndex !== -1) {
+        // Aeroporto já existe na rota - truncar a partir deste ponto
+        console.log(`Aeroporto ${airport.code} já existe na posição ${existingIndex}. Truncando rota...`);
+        
+        // Manter apenas os waypoints até o aeroporto clicado (inclusive)
+        routePoints = routePoints.slice(0, existingIndex + 1);
+        
+        // Limpar mapa e redesenhar rota truncada
+        redrawRouteFromPoints();
+        
+        // Atualizar interface
+        updateRouteInterface();
+        updateRouteList();
+        
+        console.log(`Rota truncada. Aeroportos restantes: ${routePoints.map(p => p.code).join(' → ')}`);
+        return;
+    }
+    
+    // Se não há aeroportos na rota, este será a origem
+    if (routePoints.length === 0) {
+        // Definir como origem
+        routePoints.push(airport);
+        
+        // Limpar círculos e linhas existentes
+        clearMapFeatures();
+        
+        // Desenhar círculo de alcance
+        drawRangeCircle(airport);
+        
+        // Forçar atualização dos estilos dos marcadores
+        vectorLayer.getSource().changed();
+        
+        // Atualizar interface
+        updateRouteInterface();
+        updateRouteList();
+        
+        // Habilitar botão de limpar rota
+        document.getElementById('clear-route').disabled = false;
+        
+        console.log(`Origem definida: ${airport.city} (${airport.code})`);
+        
+    } else {
+        // Adicionar como waypoint/destino
+        const lastAirport = routePoints[routePoints.length - 1];
+        const distance = calculateDistance(lastAirport.lat, lastAirport.lng, airport.lat, airport.lng);
+        
+        // Verificar se está dentro do alcance
+        if (distance > currentRange * 0.98) {
+            const deficit = distance - (currentRange * 0.98);
+            const deficitPercent = ((deficit / (currentRange * 0.98)) * 100).toFixed(1);
+            
+            alert(`❌ Aeroporto fora de alcance!\n\n` +
+                  `📍 Rota: ${lastAirport.city} → ${airport.city}\n` +
+                  `📏 Distância: ${parseInt(distance).toLocaleString()} km\n` +
+                  `✈️ Alcance: ${parseInt(currentRange * 0.98).toLocaleString()} km\n` +
+                  `❌ Déficit: ${parseInt(deficit).toLocaleString()} km (${deficitPercent}% além)\n\n` +
+                  `💡 Escolha um aeroporto intermediário ou uma aeronave com maior alcance.`);
+            return;
+        }
+        
+        // Adicionar à rota
+        routePoints.push(airport);
+        
+        // Desenhar linha de rota
+        drawRouteLine(lastAirport, airport);
+        
+        // Atualizar círculo de alcance para o novo aeroporto
+        drawRangeCircle(airport);
+        
+        // Forçar atualização dos estilos dos marcadores
+        vectorLayer.getSource().changed();
+        
+        // Atualizar interface
+        updateRouteInterface();
+        updateRouteList();
+        
+        console.log(`Waypoint adicionado: ${airport.city} (${airport.code}), Distância: ${parseInt(distance).toLocaleString()} km`);
+    }
+}
+
+// Redesenhar toda a rota a partir dos pontos atuais
+function redrawRouteFromPoints() {
+    // Limpar features existentes (mas manter marcadores de aeroportos)
+    clearMapFeatures();
+    
+    // Recarregar marcadores de aeroportos (que agora terão estilo atualizado baseado na rota)
+    loadAndDisplayAllAirports();
+    
+    if (routePoints.length === 0) {
+        return;
+    }
+    
+    // Desenhar círculo para o primeiro aeroporto (origem)
+    drawRangeCircle(routePoints[0]);
+    
+    // Desenhar linhas e círculos para o restante da rota
+    for (let i = 1; i < routePoints.length; i++) {
+        const fromAirport = routePoints[i - 1];
+        const toAirport = routePoints[i];
+        
+        // Desenhar linha conectando os aeroportos
+        drawRouteLine(fromAirport, toAirport);
+        
+        // Desenhar círculo de alcance para o aeroporto atual
+        drawRangeCircle(toAirport);
+    }
+    
+    console.log(`Rota redesenhada com ${routePoints.length} aeroportos`);
+    
+    // Forçar re-renderização para atualizar estilos dos marcadores
+    vectorLayer.getSource().changed();
+}
+
+// Limpar features do mapa (círculos e linhas, mas manter marcadores de aeroportos)
+function clearMapFeatures() {
+    // Remover apenas círculos e linhas, mantendo marcadores de aeroportos
+    const featuresToRemove = [];
+    vectorSource.forEachFeature(function(feature) {
+        const type = feature.get('type');
+        if (type === 'range-circle' || type === 'route-line') {
+            featuresToRemove.push(feature);
+        }
+    });
+    
+    featuresToRemove.forEach(function(feature) {
+        vectorSource.removeFeature(feature);
+    });
+    
+    // Limpar arrays de referência
+    rangeCircles = [];
+    routeLines = [];
+}
+
+// Atualizar interface para refletir seleção atual
+function updateRouteInterface() {
+    const statusDiv = document.querySelector('.route-status') || createRouteStatusDiv();
+    
+    // Verificar se há aeronave selecionada
+    if (!currentAircraft || currentRange <= 0) {
+        statusDiv.innerHTML = '<p>✈️ Primeiro selecione uma aeronave para começar a planejar a rota</p>';
+        return;
+    }
+    
+    if (routePoints.length === 0) {
+        statusDiv.innerHTML = '<p>🎯 Clique em um aeroporto no mapa para definir origem</p>';
+    } else if (routePoints.length === 1) {
+        const origin = routePoints[0];
+        statusDiv.innerHTML = `<p>✅ <strong>Origem:</strong> ${origin.city} (${origin.code})<br>🎯 <strong>Próximo:</strong> Clique no próximo aeroporto<br><small>💡 <em>Dica: Clique na origem para reiniciar a rota</em></small></p>`;
+    } else {
+        const origin = routePoints[0];
+        const current = routePoints[routePoints.length - 1];
+        const waypointCount = routePoints.length - 1;
+        statusDiv.innerHTML = `<p>✅ <strong>Origem:</strong> ${origin.city} (${origin.code})<br>📍 <strong>Atual:</strong> ${current.city} (${current.code}) <em>(${waypointCount} waypoint${waypointCount > 1 ? 's' : ''})</em><br>🎯 <strong>Próximo:</strong> Clique no próximo aeroporto<br><small>💡 <em>Dica: Clique em qualquer waypoint da rota para truncar a partir dele</em></small></p>`;
+    }
+}
+
+// Criar div de status da rota se não existir
+function createRouteStatusDiv() {
+    let statusDiv = document.querySelector('.route-status');
+    if (!statusDiv) {
+        statusDiv = document.createElement('div');
+        statusDiv.className = 'route-status';
+        statusDiv.style.cssText = `
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.4;
+        `;
+        
+        // Inserir após os controles de aeronave
+        const aircraftSection = document.querySelector('.aircraft-selection');
+        aircraftSection.parentNode.insertBefore(statusDiv, aircraftSection.nextSibling);
+    }
+    return statusDiv;
 }
 
 // Desenhar círculo de alcance geodésico usando OpenLayers
@@ -918,18 +918,18 @@ function fitMapToRoute() {
 
 // Limpar rota
 function clearRoute() {
-    // Remover todas as features da fonte de dados
-    vectorSource.clear();
-    
-    // Limpar arrays de referência
-    rangeCircles = [];
-    routeLines = [];
-    
     // Limpar pontos da rota
     routePoints = [];
     
-    // Atualizar lista de rota
+    // Limpar features do mapa (mas manter marcadores de aeroportos)
+    clearMapFeatures();
+    
+    // Recarregar todos os marcadores de aeroportos
+    loadAndDisplayAllAirports();
+    
+    // Atualizar lista de rota e interface
     updateRouteList();
+    updateRouteInterface();
     
     // Resetar todos os filtros de origem
     const originRegionSelect = document.getElementById('origin-region');
