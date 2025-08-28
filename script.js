@@ -282,27 +282,49 @@ function initializeMap() {
     map = new ol.Map({
         target: 'map',
         layers: [
-            // Base layer
+            // Base layer - Satellite imagery
             new ol.layer.Tile({
                 source: new ol.source.XYZ({
-                    url: 'https://{a-c}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    attributions: '&copy; Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+                    wrapX: true,
+                    projection: 'EPSG:3857',
+                    extent: ol.proj.transformExtent([-270, -90, 270, 90], 'EPSG:4326', 'EPSG:3857')
+                })
+            }),
+            // Boundaries layer with light/white lines (from dark theme)
+            new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url: 'https://{a-c}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png',
                     attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-                    tileLoadFunction: function(tile, src) {
-                        // Append a random query parameter to bypass cache
-                        tile.getImage().src = src + '?cache_bust=' + Math.random();
-                    }
+                    wrapX: true,
+                    projection: 'EPSG:3857',
+                    extent: ol.proj.transformExtent([-270, -90, 270, 90], 'EPSG:4326', 'EPSG:3857')
+                }),
+                opacity: 0.7
+            }),
+            // Labels layer with WHITE text (from dark theme)
+            new ol.layer.Tile({
+                source: new ol.source.XYZ({
+                    url: 'https://{a-c}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',
+                    attributions: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    wrapX: true,
+                    projection: 'EPSG:3857',
+                    extent: ol.proj.transformExtent([-270, -90, 270, 90], 'EPSG:4326', 'EPSG:3857')
                 })
             }),
             // Vector layer for circles and lines
             vectorLayer
         ],
         view: new ol.View({
-            center: ol.proj.fromLonLat([0, 20]), // Convert to Web Mercator
-            zoom: 2,
-            minZoom: 2,
+            center: ol.proj.fromLonLat([0, 0]), // Start at Greenwich
+            zoom: 2, // Temporary initial zoom
+            minZoom: 0.3,
             maxZoom: 10,
-            // Prevent navigation beyond world limits
-            extent: ol.proj.transformExtent([-180, -85, 180, 85], 'EPSG:4326', 'EPSG:3857')
+            // Extended horizontal coverage: -270° to +270° (540° total width)
+            extent: ol.proj.transformExtent([-270, -90, 270, 90], 'EPSG:4326', 'EPSG:3857'),
+            multiWorld: true,
+            enableRotation: false
         })
     });
     
@@ -315,6 +337,16 @@ function initializeMap() {
     map.once('rendercomplete', function() {
         // Add popup for interaction with circles and lines
         setupPopupInteraction();
+        
+        // Force initial global view after map loads
+        setTimeout(function() {
+            map.getView().animate({
+                center: ol.proj.fromLonLat([0, 20]), 
+                zoom: 0.6,
+                duration: 1000
+            });
+        }, 500);
+        
         console.log('OpenLayers map loaded and interactions configured');
     });
 }
@@ -485,6 +517,22 @@ function setupPopupInteraction() {
         }
     });
     
+    // Add right-click (contextmenu) event for airport details
+    map.on('contextmenu', function(event) {
+        event.preventDefault(); // Prevent browser context menu
+        
+        const feature = map.forEachFeatureAtPixel(event.pixel, function(feature) {
+            return feature;
+        });
+        
+        if (feature && feature.get('type') === 'airport-marker') {
+            const airport = feature.get('airport');
+            showAirportDetailsPanel(airport, event.coordinate);
+        } else {
+            hideAirportDetailsPanel();
+        }
+    });
+    
     // Alterar cursor ao passar sobre features
     map.on('pointermove', function(event) {
         const hit = map.hasFeatureAtPixel(event.pixel);
@@ -494,6 +542,61 @@ function setupPopupInteraction() {
         }
     });
 }
+
+// Airport Details Panel Functions
+let airportDetailsOverlay = null;
+
+function showAirportDetailsPanel(airport, coordinate) {
+    // Remove existing panel if any
+    hideAirportDetailsPanel();
+    
+    // Create panel element
+    const panelElement = document.createElement('div');
+    panelElement.className = 'airport-details-panel';
+    panelElement.innerHTML = `
+        <div class="airport-details-header">
+            <h3>${airport.code}</h3>
+            <button class="close-btn" onclick="hideAirportDetailsPanel()">×</button>
+        </div>
+        <div class="airport-details-content">
+            <div class="detail-item">
+                <strong>Airport:</strong> ${airport.name}
+            </div>
+            <div class="detail-item">
+                <strong>City:</strong> ${airport.city}
+            </div>
+            <div class="detail-item">
+                <strong>Country:</strong> ${airport.country}
+            </div>
+            <div class="detail-item">
+                <strong>Coordinates:</strong> ${parseFloat(airport.lat).toFixed(4)}°, ${parseFloat(airport.lng).toFixed(4)}°
+            </div>
+            ${airport.elevation ? `<div class="detail-item"><strong>Elevation:</strong> ${airport.elevation} ft</div>` : ''}
+        </div>
+    `;
+    
+    // Create overlay
+    airportDetailsOverlay = new ol.Overlay({
+        element: panelElement,
+        positioning: 'center-left',
+        stopEvent: true,
+        offset: [15, 0]
+    });
+    
+    // Add to map
+    map.addOverlay(airportDetailsOverlay);
+    airportDetailsOverlay.setPosition(coordinate);
+}
+
+function hideAirportDetailsPanel() {
+    if (airportDetailsOverlay) {
+        map.removeOverlay(airportDetailsOverlay);
+        airportDetailsOverlay = null;
+    }
+}
+
+// Make function globally accessible
+window.hideAirportDetailsPanel = hideAirportDetailsPanel;
 
 // Função para selecionar aeroporto clicando no mapa
 function selectAirportForRoute(airport) {
@@ -812,37 +915,68 @@ function drawRouteLine(fromAirport, toAirport) {
     let lineFeatures = [];
     
     if (crossesAntimeridian) {
-        // Dividir linha em dois segmentos
-        const fromCoord = ol.proj.fromLonLat([fromAirport.lng, fromAirport.lat]);
-        const toCoord = ol.proj.fromLonLat([toAirport.lng, toAirport.lat]);
+        console.log(`Antimeridian crossing: ${fromAirport.code} (${fromAirport.lng}) to ${toAirport.code} (${toAirport.lng})`);
         
-        // Calcular pontos de interseção nas bordas do mapa
-        let edgeLng1, edgeLng2;
+        // Usar coordenadas ajustadas para determinar a direção mais curta
+        let fromLng = parseFloat(fromAirport.lng);
+        let toLng = parseFloat(toAirport.lng);
         
-        if (fromAirport.lng > toAirport.lng) {
-            // Indo de leste para oeste através do antimeridiano
-            edgeLng1 = 180;  // Borda direita
-            edgeLng2 = -180; // Borda esquerda
-        } else {
-            // Indo de oeste para leste através do antimeridiano
-            edgeLng1 = -180; // Borda esquerda  
-            edgeLng2 = 180;  // Borda direita
+        console.log(`Initial coordinates: fromLng=${fromLng}, toLng=${toLng}`);
+        
+        // Calcular ambas as distâncias possíveis
+        const directDiff = Math.abs(toLng - fromLng);
+        const wrapDiff = 360 - directDiff;
+        
+        console.log(`Distances: direct=${directDiff}, wrap=${wrapDiff}`);
+        
+        // Se a distância com wrap é menor, usar coordenadas ajustadas
+        if (wrapDiff < directDiff) {
+            if (fromLng > toLng) {
+                // Ajustar toLng para mostrar que vamos para leste (direita)
+                toLng = toLng + 360;
+                console.log(`Adjusted toLng to: ${toLng} (going east)`);
+            } else {
+                // Ajustar fromLng para mostrar que vamos para oeste (esquerda)  
+                fromLng = fromLng + 360;
+                console.log(`Adjusted fromLng to: ${fromLng} (going west)`);
+            }
         }
         
-        // Interpolar latitude nas bordas
-        const latInterpolation = fromAirport.lat + (toAirport.lat - fromAirport.lat) * 0.5;
+        console.log(`Using route: ${fromLng} to ${toLng} (shorter path)`);
         
-        // Primeiro segmento
+        // Determinar o ponto de quebra na linha de data
+        let breakLng;
+        if (toLng > fromLng) {
+            // Indo para leste, quebrar em 180°
+            breakLng = 180;
+        } else {
+            // Indo para oeste, quebrar em -180°
+            breakLng = -180;
+        }
+        
+        // Calcular latitude no ponto de quebra (interpolação linear)
+        const lngRange = toLng - fromLng;
+        const latRange = parseFloat(toAirport.lat) - parseFloat(fromAirport.lat);
+        const ratio = (breakLng - fromLng) / lngRange;
+        const breakLat = parseFloat(fromAirport.lat) + latRange * ratio;
+        
+        console.log(`Break point: lng=${breakLng}, lat=${breakLat}, ratio=${ratio}`);
+        
+        // Primeiro segmento: origem até a linha de data
         const segment1Coords = [
-            fromCoord,
-            ol.proj.fromLonLat([edgeLng1, latInterpolation])
+            ol.proj.fromLonLat([fromAirport.lng, fromAirport.lat]),
+            ol.proj.fromLonLat([breakLng, breakLat])
         ];
         
-        // Segundo segmento  
+        // Segundo segmento: do outro lado da linha de data até destino
+        const oppositeLng = breakLng === 180 ? -180 : 180;
         const segment2Coords = [
-            ol.proj.fromLonLat([edgeLng2, latInterpolation]),
-            toCoord
+            ol.proj.fromLonLat([oppositeLng, breakLat]),
+            ol.proj.fromLonLat([toAirport.lng, toAirport.lat])
         ];
+        
+        console.log(`Segment 1: (${fromAirport.lng}, ${fromAirport.lat}) to (${breakLng}, ${breakLat})`);
+        console.log(`Segment 2: (${oppositeLng}, ${breakLat}) to (${toAirport.lng}, ${toAirport.lat})`);
         
         // Criar features para ambos os segmentos
         const segment1 = new ol.Feature({
@@ -856,7 +990,7 @@ function drawRouteLine(fromAirport, toAirport) {
         
         const segment2 = new ol.Feature({
             geometry: new ol.geom.LineString(segment2Coords),
-            type: 'route-line', 
+            type: 'route-line',
             from: fromAirport,
             to: toAirport,
             distance: distance.toFixed(0),
@@ -910,6 +1044,22 @@ function calculateDistance(lat1, lng1, lat2, lng2) {
     
     console.log(`Distância calculada: ${distance.toFixed(2)} km`); // Debug
     return distance;
+}
+
+// Calcular bearing (direção) inicial entre dois pontos
+function calculateBearing(lat1, lng1, lat2, lng2) {
+    const lat1Rad = lat1 * Math.PI / 180;
+    const lat2Rad = lat2 * Math.PI / 180;
+    const deltaLngRad = (lng2 - lng1) * Math.PI / 180;
+    
+    const y = Math.sin(deltaLngRad) * Math.cos(lat2Rad);
+    const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - 
+              Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLngRad);
+    
+    const bearingRad = Math.atan2(y, x);
+    const bearing = (bearingRad * 180 / Math.PI + 360) % 360;
+    
+    return bearing;
 }
 
 // Calcular ponto de destino geodésico (usado para círculos de alcance precisos)

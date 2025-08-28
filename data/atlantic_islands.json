@@ -1,10 +1,4 @@
 [
-  {
-    "code": "ASI",
-    "city": "Jamestown",
-    "country": "Saint Helena",
-    "lat": -15.9625,
-    "lng": -14.3967,
-    "name": "Saint Helena Airport"
-  }
+{ "code":"ASI", "city":"Cat Hill","lat":"-7.9696","lng":"-14.3937","name":"RAF Ascension Island"}, 
+{ "code":"HLE", "city":"Longwood","lat":"-15.957725","lng":"-5.645943","name":"Saint Helena Airport"}
 ]
